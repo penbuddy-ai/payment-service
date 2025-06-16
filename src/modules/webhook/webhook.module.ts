@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
-import { Subscription, SubscriptionSchema } from '../../common/schemas/subscription.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../../common/schemas/subscription.schema';
 import { Payment, PaymentSchema } from '../../common/schemas/payment.schema';
 import { StripeService } from '../../common/services/stripe.service';
 import { SubscriptionService } from '../subscription/subscription.service';
@@ -22,4 +25,4 @@ import { SubscriptionService } from '../subscription/subscription.service';
   providers: [WebhookService, StripeService, SubscriptionService],
   exports: [WebhookService],
 })
-export class WebhookModule {} 
+export class WebhookModule {}

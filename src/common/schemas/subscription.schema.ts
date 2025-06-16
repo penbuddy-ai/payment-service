@@ -52,8 +52,8 @@ export class Subscription {
   /**
    * Current subscription status
    */
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: SubscriptionStatus,
     default: SubscriptionStatus.TRIAL,
   })
@@ -62,8 +62,8 @@ export class Subscription {
   /**
    * Subscription plan type
    */
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: SubscriptionPlan,
     default: SubscriptionPlan.MONTHLY,
   })
@@ -99,6 +99,9 @@ export class Subscription {
   @Prop({ default: false })
   cancelAtPeriodEnd: boolean;
 
+  @Prop({ default: false })
+  cardValidated: boolean;
+
   /**
    * Cancellation date if applicable
    */
@@ -118,7 +121,7 @@ export class Subscription {
   monthlyPrice: number;
 
   /**
-   * Yearly price in cents  
+   * Yearly price in cents
    */
   @Prop({ default: 20000 }) // 200€ (10 mois)
   yearlyPrice: number;
@@ -145,4 +148,4 @@ export class Subscription {
 /**
  * Subscription schema factory
  */
-export const SubscriptionSchema = SchemaFactory.createForClass(Subscription); 
+export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);

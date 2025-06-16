@@ -20,7 +20,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.jest/bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepare": "husky"
+    "prepare": "husky",
+    "stripe:setup": "node scripts/setup-stripe.js",
+    "stripe:test": "node scripts/test-stripe.js",
+    "webhook:dev": "node scripts/webhook-dev.js"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",

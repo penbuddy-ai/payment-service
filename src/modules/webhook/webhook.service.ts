@@ -2,8 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import Stripe from 'stripe';
-import { Subscription, SubscriptionDocument, SubscriptionStatus } from '../../common/schemas/subscription.schema';
-import { Payment, PaymentDocument, PaymentStatus } from '../../common/schemas/payment.schema';
+import {
+  Subscription,
+  SubscriptionDocument,
+  SubscriptionStatus,
+} from '../../common/schemas/subscription.schema';
+import {
+  Payment,
+  PaymentDocument,
+  PaymentStatus,
+} from '../../common/schemas/payment.schema';
 import { StripeService } from '../../common/services/stripe.service';
 
 /**
@@ -29,24 +37,35 @@ export class WebhookService {
    */
   async processWebhook(payload: Buffer, signature: string): Promise<void> {
     try {
-      const event = this.stripeService.constructWebhookEvent(payload, signature);
+      const event = this.stripeService.constructWebhookEvent(
+        payload,
+        signature,
+      );
       this.logger.log(`Processing webhook event: ${event.type}`);
 
       switch (event.type) {
         case 'customer.subscription.created':
-          await this.handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+          await this.handleSubscriptionCreated(
+            event.data.object as Stripe.Subscription,
+          );
           break;
 
         case 'customer.subscription.updated':
-          await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+          await this.handleSubscriptionUpdated(
+            event.data.object as Stripe.Subscription,
+          );
           break;
 
         case 'customer.subscription.deleted':
-          await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+          await this.handleSubscriptionDeleted(
+            event.data.object as Stripe.Subscription,
+          );
           break;
 
         case 'invoice.payment_succeeded':
-          await this.handlePaymentSucceeded(event.data.object as Stripe.Invoice);
+          await this.handlePaymentSucceeded(
+            event.data.object as Stripe.Invoice,
+          );
           break;
 
         case 'invoice.payment_failed':
@@ -54,11 +73,15 @@ export class WebhookService {
           break;
 
         case 'payment_intent.succeeded':
-          await this.handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentIntentSucceeded(
+            event.data.object as Stripe.PaymentIntent,
+          );
           break;
 
         case 'payment_intent.payment_failed':
-          await this.handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentIntentFailed(
+            event.data.object as Stripe.PaymentIntent,
+          );
           break;
 
         default:
@@ -76,14 +99,18 @@ export class WebhookService {
    * Handle subscription created event
    * @param subscription Stripe subscription object
    */
-  private async handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionCreated(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
     try {
       const existingSubscription = await this.subscriptionModel
         .findOne({ stripeSubscriptionId: subscription.id })
         .exec();
 
       if (!existingSubscription) {
-        this.logger.warn(`Subscription not found for Stripe subscription: ${subscription.id}`);
+        this.logger.warn(
+          `Subscription not found for Stripe subscription: ${subscription.id}`,
+        );
         return;
       }
 
@@ -91,14 +118,20 @@ export class WebhookService {
         .findByIdAndUpdate(existingSubscription._id, {
           stripeSubscriptionId: subscription.id,
           status: this.mapStripeStatus(subscription.status),
-          currentPeriodStart: new Date(subscription.current_period_start * 1000),
+          currentPeriodStart: new Date(
+            subscription.current_period_start * 1000,
+          ),
           currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         })
         .exec();
 
-      this.logger.log(`Updated subscription for Stripe subscription: ${subscription.id}`);
+      this.logger.log(
+        `Updated subscription for Stripe subscription: ${subscription.id}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to handle subscription created: ${error.message}`);
+      this.logger.error(
+        `Failed to handle subscription created: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -107,14 +140,18 @@ export class WebhookService {
    * Handle subscription updated event
    * @param subscription Stripe subscription object
    */
-  private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionUpdated(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
     try {
       const existingSubscription = await this.subscriptionModel
         .findOne({ stripeSubscriptionId: subscription.id })
         .exec();
 
       if (!existingSubscription) {
-        this.logger.warn(`Subscription not found for Stripe subscription: ${subscription.id}`);
+        this.logger.warn(
+          `Subscription not found for Stripe subscription: ${subscription.id}`,
+        );
         return;
       }
 
@@ -133,9 +170,13 @@ export class WebhookService {
         .findByIdAndUpdate(existingSubscription._id, updateData)
         .exec();
 
-      this.logger.log(`Updated subscription for Stripe subscription: ${subscription.id}`);
+      this.logger.log(
+        `Updated subscription for Stripe subscription: ${subscription.id}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to handle subscription updated: ${error.message}`);
+      this.logger.error(
+        `Failed to handle subscription updated: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -144,14 +185,18 @@ export class WebhookService {
    * Handle subscription deleted event
    * @param subscription Stripe subscription object
    */
-  private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionDeleted(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
     try {
       const existingSubscription = await this.subscriptionModel
         .findOne({ stripeSubscriptionId: subscription.id })
         .exec();
 
       if (!existingSubscription) {
-        this.logger.warn(`Subscription not found for Stripe subscription: ${subscription.id}`);
+        this.logger.warn(
+          `Subscription not found for Stripe subscription: ${subscription.id}`,
+        );
         return;
       }
 
@@ -162,9 +207,13 @@ export class WebhookService {
         })
         .exec();
 
-      this.logger.log(`Canceled subscription for Stripe subscription: ${subscription.id}`);
+      this.logger.log(
+        `Canceled subscription for Stripe subscription: ${subscription.id}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to handle subscription deleted: ${error.message}`);
+      this.logger.error(
+        `Failed to handle subscription deleted: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -215,7 +264,9 @@ export class WebhookService {
           .exec();
       }
 
-      this.logger.log(`Payment succeeded for subscription: ${subscription._id}`);
+      this.logger.log(
+        `Payment succeeded for subscription: ${subscription._id}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to handle payment succeeded: ${error.message}`);
       throw error;
@@ -273,14 +324,18 @@ export class WebhookService {
    * Handle payment intent succeeded event
    * @param paymentIntent Stripe payment intent object
    */
-  private async handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  private async handlePaymentIntentSucceeded(
+    paymentIntent: Stripe.PaymentIntent,
+  ): Promise<void> {
     try {
       const payment = await this.paymentModel
         .findOne({ stripePaymentIntentId: paymentIntent.id })
         .exec();
 
       if (!payment) {
-        this.logger.warn(`Payment not found for payment intent: ${paymentIntent.id}`);
+        this.logger.warn(
+          `Payment not found for payment intent: ${paymentIntent.id}`,
+        );
         return;
       }
 
@@ -293,7 +348,9 @@ export class WebhookService {
 
       this.logger.log(`Payment intent succeeded: ${paymentIntent.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle payment intent succeeded: ${error.message}`);
+      this.logger.error(
+        `Failed to handle payment intent succeeded: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -302,27 +359,34 @@ export class WebhookService {
    * Handle payment intent failed event
    * @param paymentIntent Stripe payment intent object
    */
-  private async handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  private async handlePaymentIntentFailed(
+    paymentIntent: Stripe.PaymentIntent,
+  ): Promise<void> {
     try {
       const payment = await this.paymentModel
         .findOne({ stripePaymentIntentId: paymentIntent.id })
         .exec();
 
       if (!payment) {
-        this.logger.warn(`Payment not found for payment intent: ${paymentIntent.id}`);
+        this.logger.warn(
+          `Payment not found for payment intent: ${paymentIntent.id}`,
+        );
         return;
       }
 
       await this.paymentModel
         .findByIdAndUpdate(payment._id, {
           status: PaymentStatus.FAILED,
-          failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+          failureReason:
+            paymentIntent.last_payment_error?.message || 'Payment failed',
         })
         .exec();
 
       this.logger.log(`Payment intent failed: ${paymentIntent.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle payment intent failed: ${error.message}`);
+      this.logger.error(
+        `Failed to handle payment intent failed: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -348,4 +412,4 @@ export class WebhookService {
         return SubscriptionStatus.ACTIVE;
     }
   }
-} 
+}

@@ -41,7 +41,7 @@ export class WebhookController {
     try {
       // Get raw body as buffer
       const payload = request.body as Buffer;
-      
+
       if (!signature) {
         throw new Error('Missing stripe-signature header');
       }
@@ -53,4 +53,4 @@ export class WebhookController {
       throw new Error(`Webhook error: ${error.message}`);
     }
   }
-} 
+}

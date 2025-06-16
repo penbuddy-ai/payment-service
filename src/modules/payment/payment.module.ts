@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentController } from './payment.controller';
 import { PaymentService } from './payment.service';
 import { Payment, PaymentSchema } from '../../common/schemas/payment.schema';
-import { Subscription, SubscriptionSchema } from '../../common/schemas/subscription.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../../common/schemas/subscription.schema';
 import { StripeService } from '../../common/services/stripe.service';
 
 /**
@@ -21,4 +24,4 @@ import { StripeService } from '../../common/services/stripe.service';
   providers: [PaymentService, StripeService],
   exports: [PaymentService],
 })
-export class PaymentModule {} 
+export class PaymentModule {}

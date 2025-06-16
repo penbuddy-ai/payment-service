@@ -35,7 +35,7 @@ export class SubscriptionController {
    * Create a new subscription with trial period
    */
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new subscription',
     description: 'Creates a new subscription with 30-day trial period',
   })
@@ -52,10 +52,36 @@ export class SubscriptionController {
   }
 
   /**
+   * Create a new subscription with immediate card validation (0€ payment)
+   */
+  @Post('with-card')
+  @ApiOperation({
+    summary: 'Create subscription with card validation',
+    description:
+      'Creates a new subscription with immediate card validation using 0€ payment',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Subscription created successfully with card validated',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid payment method or user already has subscription',
+  })
+  async createWithCard(
+    @Body()
+    createSubscriptionDto: CreateSubscriptionDto & { paymentMethodId: string },
+  ) {
+    return this.subscriptionService.createSubscriptionWithCard(
+      createSubscriptionDto,
+    );
+  }
+
+  /**
    * Get subscription by user ID
    */
   @Get('user/:userId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get subscription by user ID',
     description: 'Retrieves subscription information for a specific user',
   })
@@ -80,7 +106,7 @@ export class SubscriptionController {
    * Get subscription status for user
    */
   @Get('user/:userId/status')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get subscription status',
     description: 'Returns detailed subscription status information for a user',
   })
@@ -101,7 +127,7 @@ export class SubscriptionController {
    * Check if user subscription is active
    */
   @Get('user/:userId/active')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Check if subscription is active',
     description: 'Returns whether the user has an active subscription',
   })
@@ -129,7 +155,7 @@ export class SubscriptionController {
    * Start paid subscription after trial
    */
   @Post('user/:userId/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Start paid subscription',
     description: 'Converts trial subscription to paid subscription',
   })
@@ -150,14 +176,17 @@ export class SubscriptionController {
     @Param('userId') userId: string,
     @Body() body: { paymentMethodId: string },
   ) {
-    return this.subscriptionService.startPaidSubscription(userId, body.paymentMethodId);
+    return this.subscriptionService.startPaidSubscription(
+      userId,
+      body.paymentMethodId,
+    );
   }
 
   /**
    * Cancel subscription
    */
   @Post('user/:userId/cancel')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Cancel subscription',
     description: 'Cancels the user subscription',
   })
@@ -182,7 +211,7 @@ export class SubscriptionController {
    * Change subscription plan
    */
   @Patch('user/:userId/plan')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Change subscription plan',
     description: 'Changes the subscription plan for a user',
   })
@@ -210,7 +239,7 @@ export class SubscriptionController {
    * Get subscription by ID
    */
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get subscription by ID',
     description: 'Retrieves subscription by its MongoDB ID',
   })
@@ -235,7 +264,7 @@ export class SubscriptionController {
    * Update subscription
    */
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update subscription',
     description: 'Updates subscription information',
   })
@@ -258,4 +287,4 @@ export class SubscriptionController {
   ) {
     return this.subscriptionService.update(id, updateSubscriptionDto);
   }
-} 
+}

@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
-import { Subscription, SubscriptionSchema } from '../../common/schemas/subscription.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../../common/schemas/subscription.schema';
 import { StripeService } from '../../common/services/stripe.service';
 
 /**
@@ -19,4 +22,4 @@ import { StripeService } from '../../common/services/stripe.service';
   providers: [SubscriptionService, StripeService],
   exports: [SubscriptionService],
 })
-export class SubscriptionModule {} 
+export class SubscriptionModule {}

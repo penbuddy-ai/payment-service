@@ -2,7 +2,10 @@ import { PartialType } from '@nestjs/swagger';
 import { IsOptional, IsEnum, IsBoolean, IsDate } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { SubscriptionStatus, SubscriptionPlan } from '../../../common/schemas/subscription.schema';
+import {
+  SubscriptionStatus,
+  SubscriptionPlan,
+} from '../../../common/schemas/subscription.schema';
 
 /**
  * DTO for updating a subscription
@@ -94,4 +97,4 @@ export class UpdateSubscriptionDto {
   @IsDate()
   @Transform(({ value }) => new Date(value))
   nextBillingDate?: Date;
-} 
+}

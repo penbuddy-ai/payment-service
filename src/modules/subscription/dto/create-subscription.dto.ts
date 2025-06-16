@@ -48,4 +48,4 @@ export class CreateSubscriptionDto {
   })
   @IsEnum(SubscriptionPlan)
   plan: SubscriptionPlan;
-} 
+}

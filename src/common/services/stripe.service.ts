@@ -250,4 +250,100 @@ export class StripeService {
       throw error;
     }
   }
+
+  /**
+   * Get Stripe price ID based on plan
+   * @param plan Subscription plan
+   * @returns Stripe price ID
+   */
+  getPriceId(plan: string): string {
+    const priceIds = {
+      monthly: this.configService.get<string>('STRIPE_PRICE_MONTHLY'),
+      yearly: this.configService.get<string>('STRIPE_PRICE_YEARLY'),
+    };
+
+    const priceId = priceIds[plan];
+    if (!priceId) {
+      this.logger.warn(
+        `Price ID not configured for plan: ${plan}, using placeholder`,
+      );
+      return `price_${plan}_placeholder`;
+    }
+
+    return priceId;
+  }
+
+  /**
+   * Attach a payment method to a customer
+   * @param paymentMethodId Payment method ID
+   * @param customerId Customer ID
+   * @returns Updated payment method
+   */
+  async attachPaymentMethod(
+    paymentMethodId: string,
+    customerId: string,
+  ): Promise<Stripe.PaymentMethod> {
+    try {
+      const paymentMethod = await this.stripe.paymentMethods.attach(
+        paymentMethodId,
+        { customer: customerId },
+      );
+
+      this.logger.log(
+        `Attached payment method ${paymentMethodId} to customer ${customerId}`,
+      );
+      return paymentMethod;
+    } catch (error) {
+      this.logger.error(`Failed to attach payment method: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Update customer information
+   * @param customerId Customer ID
+   * @param updateData Update data
+   * @returns Updated customer
+   */
+  async updateCustomer(
+    customerId: string,
+    updateData: Stripe.CustomerUpdateParams,
+  ): Promise<Stripe.Customer> {
+    try {
+      const customer = await this.stripe.customers.update(
+        customerId,
+        updateData,
+      );
+
+      this.logger.log(`Updated customer: ${customerId}`);
+      return customer;
+    } catch (error) {
+      this.logger.error(`Failed to update customer: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Confirm a payment intent
+   * @param paymentIntentId Payment intent ID
+   * @param confirmParams Confirmation parameters
+   * @returns Confirmed payment intent
+   */
+  async confirmPaymentIntent(
+    paymentIntentId: string,
+    confirmParams: Stripe.PaymentIntentConfirmParams,
+  ): Promise<Stripe.PaymentIntent> {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.confirm(
+        paymentIntentId,
+        confirmParams,
+      );
+
+      this.logger.log(`Confirmed payment intent: ${paymentIntentId}`);
+      return paymentIntent;
+    } catch (error) {
+      this.logger.error(`Failed to confirm payment intent: ${error.message}`);
+      throw error;
+    }
+  }
 }

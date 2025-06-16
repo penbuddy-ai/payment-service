@@ -26,7 +26,8 @@ export class AppService {
   getInfo() {
     return {
       name: 'Penpal AI Payment Service',
-      description: 'Service de gestion des paiements, abonnements et facturation',
+      description:
+        'Service de gestion des paiements, abonnements et facturation',
       version: '1.0.0',
       features: [
         'Gestion des abonnements',
@@ -40,4 +41,4 @@ export class AppService {
       memory: process.memoryUsage(),
     };
   }
-} 
+}

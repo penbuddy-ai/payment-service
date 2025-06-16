@@ -34,31 +34,35 @@ Service de gestion des paiements pour Penpal AI, gérant les abonnements, les tr
 1. **Cloner le repository** (si ce n'est pas déjà fait)
 
 2. **Installer les dépendances**
+
    ```bash
    cd penpal-payment-service
    npm install
    ```
 
 3. **Configuration de l'environnement**
+
    ```bash
    cp environment.template .env
    ```
-   
+
    Modifier le fichier `.env` avec vos configurations :
+
    ```env
    # Database
    MONGODB_URI=mongodb://localhost:27017/penpal-payment
-   
+
    # Stripe (récupérer depuis le dashboard Stripe)
    STRIPE_SECRET_KEY=sk_test_...
    STRIPE_WEBHOOK_SECRET=whsec_...
    ```
 
 4. **Démarrer MongoDB** (si local)
+
    ```bash
    # Avec Docker
    docker run -d -p 27017:27017 --name mongodb mongo:latest
-   
+
    # Ou avec votre installation locale
    mongod
    ```
@@ -66,11 +70,13 @@ Service de gestion des paiements pour Penpal AI, gérant les abonnements, les tr
 ## 🚀 Démarrage
 
 ### Mode développement
+
 ```bash
 npm run start:dev
 ```
 
 ### Mode production
+
 ```bash
 npm run build
 npm run start:prod
@@ -86,11 +92,13 @@ Une fois le service démarré, la documentation Swagger est disponible à :
 ## 🔐 Configuration Stripe
 
 ### 1. Créer un compte Stripe
+
 - Aller sur [stripe.com](https://stripe.com)
 - Créer un compte développeur
 - Récupérer les clés API dans le dashboard
 
 ### 2. Configurer les produits et prix
+
 ```bash
 # Créer les produits dans Stripe Dashboard ou via API
 # Exemple pour un abonnement mensuel à 20€
@@ -103,7 +111,9 @@ curl https://api.stripe.com/v1/prices \
 ```
 
 ### 3. Configurer les webhooks
+
 Dans le dashboard Stripe :
+
 - Aller dans Developers > Webhooks
 - Ajouter l'endpoint : `https://votre-domaine.com/webhooks/stripe`
 - Sélectionner les événements :
@@ -146,6 +156,7 @@ Dans le dashboard Stripe :
 ## 🌐 Endpoints principaux
 
 ### Abonnements
+
 - `POST /subscriptions` - Créer un abonnement
 - `GET /subscriptions/user/:userId` - Récupérer un abonnement
 - `GET /subscriptions/user/:userId/status` - Statut d'abonnement
@@ -153,6 +164,7 @@ Dans le dashboard Stripe :
 - `POST /subscriptions/user/:userId/cancel` - Annuler l'abonnement
 
 ### Webhooks
+
 - `POST /webhooks/stripe` - Événements Stripe
 
 ## 🧪 Tests
@@ -171,6 +183,7 @@ npm run test:cov
 ## 📝 Logs
 
 Les logs sont structurés et incluent :
+
 - Création/modification d'abonnements
 - Traitements de paiements
 - Événements webhook
@@ -187,6 +200,7 @@ Les logs sont structurés et incluent :
 ## 🚨 Gestion d'erreurs
 
 Le service gère automatiquement :
+
 - Échecs de paiement
 - Webhooks Stripe manqués
 - Erreurs de réseau
@@ -210,10 +224,11 @@ Le service gère automatiquement :
 ## 📞 Support
 
 Pour toute question ou problème :
+
 1. Vérifier la documentation API
 2. Consulter les logs du service
 3. Vérifier la configuration Stripe
 
 ## 📄 Licence
 
-Usage privé - Projet Penpal AI 
+Usage privé - Projet Penpal AI

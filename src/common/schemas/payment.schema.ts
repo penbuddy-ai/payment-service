@@ -59,8 +59,8 @@ export class Payment {
   /**
    * Payment status
    */
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: PaymentStatus,
     default: PaymentStatus.PENDING,
   })
@@ -69,8 +69,8 @@ export class Payment {
   /**
    * Payment method used
    */
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: PaymentMethod,
   })
   paymentMethod: PaymentMethod;
@@ -157,4 +157,4 @@ export class Payment {
 /**
  * Payment schema factory
  */
-export const PaymentSchema = SchemaFactory.createForClass(Payment); 
+export const PaymentSchema = SchemaFactory.createForClass(Payment);
