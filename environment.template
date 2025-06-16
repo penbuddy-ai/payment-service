@@ -1,0 +1,25 @@
+# Server Configuration
+PORT=3003
+NODE_ENV=development
+CORS_ORIGIN=*
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/penpal-payment
+
+# Stripe Configuration
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Stripe Price IDs (to be configured after creating products in Stripe)
+STRIPE_PRICE_MONTHLY=price_monthly_plan_id
+STRIPE_PRICE_YEARLY=price_yearly_plan_id
+
+# Rate Limiting
+THROTTLE_TTL=60000
+THROTTLE_LIMIT=10
+
+# External Services URLs
+AUTH_SERVICE_URL=http://localhost:3001
+DB_SERVICE_URL=http://localhost:3002
+MAIL_SERVICE_URL=http://localhost:3004 
