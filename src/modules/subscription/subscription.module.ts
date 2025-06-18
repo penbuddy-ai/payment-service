@@ -1,13 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
-import {
-  Subscription,
-  SubscriptionSchema,
-} from '../../common/schemas/subscription.schema';
-import { StripeService } from '../../common/services/stripe.service';
-import { AuthServiceClient } from '../../common/services/auth-service.client';
+import { CommonModule } from '../../common/common.module';
 
 /**
  * Subscription module
@@ -15,12 +9,10 @@ import { AuthServiceClient } from '../../common/services/auth-service.client';
  */
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Subscription.name, schema: SubscriptionSchema },
-    ]),
+    CommonModule,
   ],
   controllers: [SubscriptionController],
-  providers: [SubscriptionService, StripeService, AuthServiceClient],
+  providers: [SubscriptionService],
   exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
@@ -10,6 +10,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { HttpErrorInterceptor } from './common/interceptors/http-error.interceptor';
 
 /**
  * Main application module for the Payment Service
@@ -23,19 +24,7 @@ import { BillingModule } from './modules/billing/billing.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Database
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>(
-          'MONGODB_URI',
-          'mongodb://localhost:27017/penpal-payment',
-        ),
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }),
-      inject: [ConfigService],
-    }),
+    // Database access is now handled via db-service
 
     // Rate limiting
     ThrottlerModule.forRootAsync({
@@ -64,6 +53,12 @@ import { BillingModule } from './modules/billing/billing.module';
     BillingModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpErrorInterceptor,
+    },
+  ],
 })
 export class AppModule {}

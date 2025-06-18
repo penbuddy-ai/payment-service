@@ -1,24 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BillingController } from './billing.controller';
 import { BillingService } from './billing.service';
-import { Payment, PaymentSchema } from '../../common/schemas/payment.schema';
-import {
-  Subscription,
-  SubscriptionSchema,
-} from '../../common/schemas/subscription.schema';
+import { CommonModule } from '../../common/common.module';
 
 /**
  * Billing module
  * Handles billing operations and invoice generation
  */
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Payment.name, schema: PaymentSchema },
-      { name: Subscription.name, schema: SubscriptionSchema },
-    ]),
-  ],
+  imports: [CommonModule],
   controllers: [BillingController],
   providers: [BillingService],
   exports: [BillingService],

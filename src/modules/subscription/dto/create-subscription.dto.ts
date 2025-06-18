@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { SubscriptionPlan } from '../../../common/schemas/subscription.schema';
+import { SubscriptionPlan } from '../../../common/types';
 
 /**
  * DTO for creating a new subscription

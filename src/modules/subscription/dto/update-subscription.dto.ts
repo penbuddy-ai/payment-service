@@ -5,7 +5,7 @@ import { Transform } from 'class-transformer';
 import {
   SubscriptionStatus,
   SubscriptionPlan,
-} from '../../../common/schemas/subscription.schema';
+} from '../../../common/types';
 
 /**
  * DTO for updating a subscription

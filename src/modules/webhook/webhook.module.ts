@@ -1,34 +1,17 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
-import {
-  Subscription,
-  SubscriptionSchema,
-} from '../../common/schemas/subscription.schema';
-import { Payment, PaymentSchema } from '../../common/schemas/payment.schema';
 import { StripeService } from '../../common/services/stripe.service';
-import { AuthServiceClient } from '../../common/services/auth-service.client';
-import { SubscriptionService } from '../subscription/subscription.service';
+import { CommonModule } from '../../common/common.module';
 
 /**
  * Webhook module
  * Handles Stripe webhook events for payments and subscriptions
  */
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Subscription.name, schema: SubscriptionSchema },
-      { name: Payment.name, schema: PaymentSchema },
-    ]),
-  ],
+  imports: [CommonModule],
   controllers: [WebhookController],
-  providers: [
-    WebhookService,
-    StripeService,
-    SubscriptionService,
-    AuthServiceClient,
-  ],
+  providers: [WebhookService, StripeService],
   exports: [WebhookService],
 })
 export class WebhookModule {}
