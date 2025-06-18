@@ -82,12 +82,12 @@ npm run build
 npm run start:prod
 ```
 
-Le service sera disponible sur `http://localhost:3003`
+Le service sera disponible sur `http://localhost:3004`
 
 ## 📚 Documentation API
 
 Une fois le service démarré, la documentation Swagger est disponible à :
-`http://localhost:3003/api/docs`
+`http://localhost:3004/api/docs`
 
 ## 🔐 Configuration Stripe
 
