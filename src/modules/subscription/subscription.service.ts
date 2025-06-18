@@ -13,6 +13,7 @@ import {
   SubscriptionPlan,
 } from '../../common/schemas/subscription.schema';
 import { StripeService } from '../../common/services/stripe.service';
+import { AuthServiceClient } from '../../common/services/auth-service.client';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 
@@ -23,17 +24,16 @@ import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 @Injectable()
 export class SubscriptionService {
   private readonly logger = new Logger(SubscriptionService.name);
-  private readonly dbServiceUrl =
-    process.env.DB_SERVICE_URL || 'http://localhost:3002';
 
   constructor(
     @InjectModel(Subscription.name)
     private subscriptionModel: Model<SubscriptionDocument>,
     private stripeService: StripeService,
+    private authServiceClient: AuthServiceClient,
   ) {}
 
   /**
-   * Update user subscription info in the database service
+   * Update user subscription info via auth service
    */
   private async updateUserSubscription(
     userId: string,
@@ -41,41 +41,11 @@ export class SubscriptionService {
     status: string,
     trialEnd?: Date,
   ): Promise<void> {
-    try {
-      const response = await fetch(
-        `${this.dbServiceUrl}/users/${userId}/subscription`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': process.env.DB_SERVICE_API_KEY || 'default-key',
-            'x-service-name': 'payment-service',
-          },
-          body: JSON.stringify({
-            plan,
-            status,
-            trialEnd,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        this.logger.error(
-          `Failed to update user subscription in DB: ${error.message || response.statusText}`,
-        );
-        // Don't throw error - subscription creation should still succeed even if user update fails
-      } else {
-        this.logger.log(
-          `Successfully updated user ${userId} subscription in DB`,
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        `Error calling DB service to update user subscription: ${error.message}`,
-      );
-      // Don't throw error - subscription creation should still succeed even if user update fails
-    }
+    await this.authServiceClient.updateUserSubscription(userId, {
+      plan: plan as 'monthly' | 'yearly',
+      status: status as 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid',
+      trialEnd,
+    });
   }
 
   /**

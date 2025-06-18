@@ -7,6 +7,7 @@ import {
   SubscriptionSchema,
 } from '../../common/schemas/subscription.schema';
 import { StripeService } from '../../common/services/stripe.service';
+import { AuthServiceClient } from '../../common/services/auth-service.client';
 
 /**
  * Subscription module
@@ -19,7 +20,7 @@ import { StripeService } from '../../common/services/stripe.service';
     ]),
   ],
   controllers: [SubscriptionController],
-  providers: [SubscriptionService, StripeService],
+  providers: [SubscriptionService, StripeService, AuthServiceClient],
   exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

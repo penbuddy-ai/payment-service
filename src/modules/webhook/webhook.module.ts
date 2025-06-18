@@ -8,6 +8,7 @@ import {
 } from '../../common/schemas/subscription.schema';
 import { Payment, PaymentSchema } from '../../common/schemas/payment.schema';
 import { StripeService } from '../../common/services/stripe.service';
+import { AuthServiceClient } from '../../common/services/auth-service.client';
 import { SubscriptionService } from '../subscription/subscription.service';
 
 /**
@@ -22,7 +23,12 @@ import { SubscriptionService } from '../subscription/subscription.service';
     ]),
   ],
   controllers: [WebhookController],
-  providers: [WebhookService, StripeService, SubscriptionService],
+  providers: [
+    WebhookService,
+    StripeService,
+    SubscriptionService,
+    AuthServiceClient,
+  ],
   exports: [WebhookService],
 })
 export class WebhookModule {}
