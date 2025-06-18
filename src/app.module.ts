@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CommonModule } from './common/common.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
@@ -52,6 +53,9 @@ import { BillingModule } from './modules/billing/billing.module';
     CacheModule.register({
       isGlobal: true,
     }),
+
+    // Common utilities
+    CommonModule,
 
     // Feature modules
     SubscriptionModule,
