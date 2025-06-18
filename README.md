@@ -115,7 +115,7 @@ curl https://api.stripe.com/v1/prices \
 Dans le dashboard Stripe :
 
 - Aller dans Developers > Webhooks
-- Ajouter l'endpoint : `https://votre-domaine.com/webhooks/stripe`
+- Ajouter l'endpoint : `https://votre-domaine.com/api/v1/webhooks/stripe`
 - Sélectionner les événements :
   - `customer.subscription.created`
   - `customer.subscription.updated`
@@ -157,15 +157,15 @@ Dans le dashboard Stripe :
 
 ### Abonnements
 
-- `POST /subscriptions` - Créer un abonnement
-- `GET /subscriptions/user/:userId` - Récupérer un abonnement
-- `GET /subscriptions/user/:userId/status` - Statut d'abonnement
-- `POST /subscriptions/user/:userId/activate` - Activer l'abonnement payant
-- `POST /subscriptions/user/:userId/cancel` - Annuler l'abonnement
+- `POST /api/v1/subscriptions` - Créer un abonnement
+- `GET /api/v1/subscriptions/user/:userId` - Récupérer un abonnement
+- `GET /api/v1/subscriptions/user/:userId/status` - Statut d'abonnement
+- `POST /api/v1/subscriptions/user/:userId/activate` - Activer l'abonnement payant
+- `POST /api/v1/subscriptions/user/:userId/cancel` - Annuler l'abonnement
 
 ### Webhooks
 
-- `POST /webhooks/stripe` - Événements Stripe
+- `POST /api/v1/webhooks/stripe` - Événements Stripe
 
 ## 🧪 Tests
 

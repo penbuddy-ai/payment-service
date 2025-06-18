@@ -16,6 +16,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  // Set global API prefix
+  app.setGlobalPrefix('api/v1');
+
   // Security middleware
   app.use(helmet());
   app.use(compression());
@@ -46,7 +49,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/v1/docs', app, document);
 
   // Start the server
   const port = configService.get('PORT', 3003);
@@ -54,8 +57,9 @@ async function bootstrap() {
 
   logger.log(`🚀 Payment Service running on port ${port}`);
   logger.log(
-    `📚 API Documentation available at http://localhost:${port}/api/docs`,
+    `📚 API Documentation available at http://localhost:${port}/api/v1/docs`,
   );
+  logger.log(`🌐 API Base URL: http://localhost:${port}/api/v1`);
 }
 
 bootstrap();
