@@ -5,7 +5,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { StripeService } from '../../common/services/stripe.service';
-import { AuthServiceClient } from '../../common/services/auth-service.client';
 import { 
   DbServiceClient, 
   Subscription, 
@@ -40,24 +39,11 @@ export class SubscriptionService {
   constructor(
     private dbServiceClient: DbServiceClient,
     private stripeService: StripeService,
-    private authServiceClient: AuthServiceClient,
   ) {}
 
-  /**
-   * Update user subscription info via auth service
-   */
-  private async updateUserSubscription(
-    userId: string,
-    plan: string,
-    status: string,
-    trialEnd?: Date,
-  ): Promise<void> {
-    await this.authServiceClient.updateUserSubscription(userId, {
-      plan: plan as 'monthly' | 'yearly',
-      status: status as 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid',
-      trialEnd,
-    });
-  }
+  // Removed updateUserSubscription method
+  // Subscription data is now managed entirely in db-service
+  // Auth-service can query db-service when it needs subscription information
 
   /**
    * Create a new subscription with trial period
@@ -109,13 +95,7 @@ export class SubscriptionService {
         `Created subscription for user ${userId} with trial period`,
       );
 
-      await this.updateUserSubscription(
-        userId,
-        plan,
-        SubscriptionStatus.TRIAL,
-        trialEnd,
-      );
-
+      // Subscription data is already in db-service - no need to update auth-service
       return savedSubscription;
     } catch (error) {
       this.logger.error(`Failed to create subscription: ${error.message}`);
@@ -163,11 +143,7 @@ export class SubscriptionService {
             );
           }
 
-          await this.updateUserSubscription(
-            userId,
-            plan,
-            SubscriptionStatus.ACTIVE,
-          );
+          // Subscription data is already updated in db-service
 
           return updatedSubscription;
         } else {
@@ -227,12 +203,7 @@ export class SubscriptionService {
         `Created subscription with card validation for user ${userId}`,
       );
 
-      await this.updateUserSubscription(
-        userId,
-        plan,
-        SubscriptionStatus.TRIAL,
-        trialEnd,
-      );
+      // Subscription data is already in db-service
 
       return savedSubscription;
     } catch (error) {
@@ -364,12 +335,7 @@ export class SubscriptionService {
       );
 
       this.logger.log(`Started paid subscription for user ${userId}`);
-      await this.updateUserSubscription(
-        userId,
-        subscription.plan,
-        SubscriptionStatus.ACTIVE,
-        nextBillingDate,
-      );
+      // Subscription data is already updated in db-service
       return updatedSubscription;
     } catch (error) {
       this.logger.error(`Failed to start paid subscription: ${error.message}`);
@@ -417,12 +383,7 @@ export class SubscriptionService {
       );
 
       this.logger.log(`Canceled subscription for user ${userId}`);
-      await this.updateUserSubscription(
-        userId,
-        subscription.plan,
-        updatedSubscription.status,
-      );
-
+      // Subscription data is already updated in db-service
       return updatedSubscription;
     } catch (error) {
       this.logger.error(`Failed to cancel subscription: ${error.message}`);
@@ -453,12 +414,7 @@ export class SubscriptionService {
       );
 
       this.logger.log(`Changed subscription plan for user ${userId} to ${newPlan}`);
-      await this.updateUserSubscription(
-        userId,
-        newPlan,
-        subscription.status,
-      );
-
+      // Subscription data is already updated in db-service
       return updatedSubscription;
     } catch (error) {
       this.logger.error(`Failed to change subscription plan: ${error.message}`);
