@@ -1,9 +1,10 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 const helmet = require('helmet');
 const compression = require('compression');
 
@@ -14,6 +15,17 @@ const compression = require('compression');
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const logger = new Logger('Bootstrap');
+
+  // Set global API prefix
+  app.setGlobalPrefix('api/v1');
+
+  // Enable HTTP logging in development mode
+  const isDevelopment = configService.get('NODE_ENV', 'development') === 'development';
+  if (isDevelopment) {
+    app.useGlobalInterceptors(new LoggingInterceptor());
+    logger.log('🔍 HTTP Request/Response details logging enabled (Development mode)');
+  }
 
   // Security middleware
   app.use(helmet());
@@ -45,16 +57,17 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/v1/docs', app, document);
 
   // Start the server
   const port = configService.get('PORT', 3003);
   await app.listen(port);
 
-  console.log(`🚀 Payment Service running on port ${port}`);
-  console.log(
-    `📚 API Documentation available at http://localhost:${port}/api/docs`,
+  logger.log(`🚀 Payment Service running on port ${port}`);
+  logger.log(
+    `📚 API Documentation available at http://localhost:${port}/api/v1/docs`,
   );
+  logger.log(`🌐 API Base URL: http://localhost:${port}/api/v1`);
 }
 
 bootstrap();

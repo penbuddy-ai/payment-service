@@ -1,18 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import Stripe from 'stripe';
-import {
-  Subscription,
-  SubscriptionDocument,
-  SubscriptionStatus,
-} from '../../common/schemas/subscription.schema';
-import {
-  Payment,
-  PaymentDocument,
-  PaymentStatus,
-} from '../../common/schemas/payment.schema';
 import { StripeService } from '../../common/services/stripe.service';
+import { 
+  DbServiceClient, 
+  Subscription, 
+  Payment, 
+  CreatePaymentDto,
+  UpdatePaymentDto,
+  UpdateSubscriptionDto
+} from '../../common/services/db-service.client';
+import { SubscriptionStatus, PaymentStatus } from '../../common/types';
 
 /**
  * Webhook service
@@ -23,10 +20,7 @@ export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
   constructor(
-    @InjectModel(Subscription.name)
-    private subscriptionModel: Model<SubscriptionDocument>,
-    @InjectModel(Payment.name)
-    private paymentModel: Model<PaymentDocument>,
+    private dbServiceClient: DbServiceClient,
     private stripeService: StripeService,
   ) {}
 
@@ -103,9 +97,7 @@ export class WebhookService {
     subscription: Stripe.Subscription,
   ): Promise<void> {
     try {
-      const existingSubscription = await this.subscriptionModel
-        .findOne({ stripeSubscriptionId: subscription.id })
-        .exec();
+      const existingSubscription = await this.dbServiceClient.findSubscriptionByStripeSubscriptionId(subscription.id);
 
       if (!existingSubscription) {
         this.logger.warn(
@@ -114,16 +106,14 @@ export class WebhookService {
         return;
       }
 
-      await this.subscriptionModel
-        .findByIdAndUpdate(existingSubscription._id, {
-          stripeSubscriptionId: subscription.id,
-          status: this.mapStripeStatus(subscription.status),
-          currentPeriodStart: new Date(
-            subscription.current_period_start * 1000,
-          ),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        })
-        .exec();
+      await this.dbServiceClient.updateSubscriptionByStripeSubscriptionId(subscription.id, {
+        stripeSubscriptionId: subscription.id,
+        status: this.mapStripeStatus(subscription.status),
+        currentPeriodStart: new Date(
+          subscription.current_period_start * 1000,
+        ),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      });
 
       this.logger.log(
         `Updated subscription for Stripe subscription: ${subscription.id}`,
@@ -144,9 +134,7 @@ export class WebhookService {
     subscription: Stripe.Subscription,
   ): Promise<void> {
     try {
-      const existingSubscription = await this.subscriptionModel
-        .findOne({ stripeSubscriptionId: subscription.id })
-        .exec();
+      const existingSubscription = await this.dbServiceClient.findSubscriptionByStripeSubscriptionId(subscription.id);
 
       if (!existingSubscription) {
         this.logger.warn(
@@ -155,7 +143,7 @@ export class WebhookService {
         return;
       }
 
-      const updateData: Partial<Subscription> = {
+      const updateData: UpdateSubscriptionDto = {
         status: this.mapStripeStatus(subscription.status),
         currentPeriodStart: new Date(subscription.current_period_start * 1000),
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
@@ -166,9 +154,7 @@ export class WebhookService {
         updateData.canceledAt = new Date(subscription.canceled_at * 1000);
       }
 
-      await this.subscriptionModel
-        .findByIdAndUpdate(existingSubscription._id, updateData)
-        .exec();
+      await this.dbServiceClient.updateSubscriptionByStripeSubscriptionId(subscription.id, updateData);
 
       this.logger.log(
         `Updated subscription for Stripe subscription: ${subscription.id}`,
@@ -189,9 +175,7 @@ export class WebhookService {
     subscription: Stripe.Subscription,
   ): Promise<void> {
     try {
-      const existingSubscription = await this.subscriptionModel
-        .findOne({ stripeSubscriptionId: subscription.id })
-        .exec();
+      const existingSubscription = await this.dbServiceClient.findSubscriptionByStripeSubscriptionId(subscription.id);
 
       if (!existingSubscription) {
         this.logger.warn(
@@ -200,12 +184,10 @@ export class WebhookService {
         return;
       }
 
-      await this.subscriptionModel
-        .findByIdAndUpdate(existingSubscription._id, {
-          status: SubscriptionStatus.CANCELED,
-          canceledAt: new Date(),
-        })
-        .exec();
+      await this.dbServiceClient.updateSubscriptionByStripeSubscriptionId(subscription.id, {
+        status: SubscriptionStatus.CANCELED,
+        canceledAt: new Date(),
+      });
 
       this.logger.log(
         `Canceled subscription for Stripe subscription: ${subscription.id}`,
@@ -228,9 +210,7 @@ export class WebhookService {
         return;
       }
 
-      const subscription = await this.subscriptionModel
-        .findOne({ stripeSubscriptionId: invoice.subscription })
-        .exec();
+      const subscription = await this.dbServiceClient.findSubscriptionByStripeSubscriptionId(invoice.subscription as string);
 
       if (!subscription) {
         this.logger.warn(`Subscription not found for invoice: ${invoice.id}`);
@@ -238,30 +218,30 @@ export class WebhookService {
       }
 
       // Create payment record
-      const payment = new this.paymentModel({
+      const paymentData: CreatePaymentDto = {
         userId: subscription.userId,
-        subscriptionId: subscription._id,
-        stripePaymentIntentId: invoice.payment_intent,
+        subscriptionId: subscription._id!,
+        stripePaymentIntentId: invoice.payment_intent as string,
         status: PaymentStatus.SUCCEEDED,
+        paymentMethod: 'card', // Default, could be determined from payment method
         amount: invoice.amount_paid,
         currency: invoice.currency,
         description: invoice.description || 'Subscription payment',
         paidAt: new Date(),
-        billingPeriodStart: new Date(invoice.period_start * 1000),
-        billingPeriodEnd: new Date(invoice.period_end * 1000),
-        receiptUrl: invoice.hosted_invoice_url,
-      });
+        billingPeriodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : undefined,
+        billingPeriodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : undefined,
+        receiptUrl: invoice.hosted_invoice_url || undefined,
+        invoiceId: invoice.id,
+      };
 
-      await payment.save();
+      await this.dbServiceClient.createPayment(paymentData);
 
       // Update subscription status if needed
       if (subscription.status !== SubscriptionStatus.ACTIVE) {
-        await this.subscriptionModel
-          .findByIdAndUpdate(subscription._id, {
-            status: SubscriptionStatus.ACTIVE,
-            isTrialActive: false,
-          })
-          .exec();
+        await this.dbServiceClient.updateSubscriptionByStripeSubscriptionId(invoice.subscription as string, {
+          status: SubscriptionStatus.ACTIVE,
+          isTrialActive: false,
+        });
       }
 
       this.logger.log(
@@ -283,9 +263,7 @@ export class WebhookService {
         return;
       }
 
-      const subscription = await this.subscriptionModel
-        .findOne({ stripeSubscriptionId: invoice.subscription })
-        .exec();
+      const subscription = await this.dbServiceClient.findSubscriptionByStripeSubscriptionId(invoice.subscription as string);
 
       if (!subscription) {
         this.logger.warn(`Subscription not found for invoice: ${invoice.id}`);
@@ -293,27 +271,31 @@ export class WebhookService {
       }
 
       // Create failed payment record
-      const payment = new this.paymentModel({
+      const paymentData: CreatePaymentDto = {
         userId: subscription.userId,
-        subscriptionId: subscription._id,
-        stripePaymentIntentId: invoice.payment_intent,
+        subscriptionId: subscription._id!,
+        stripePaymentIntentId: invoice.payment_intent as string,
         status: PaymentStatus.FAILED,
+        paymentMethod: 'card', // Default
         amount: invoice.amount_due,
         currency: invoice.currency,
-        description: invoice.description || 'Subscription payment',
-        failureReason: 'Payment failed',
-      });
+        description: invoice.description || 'Failed subscription payment',
+        failureReason: 'Payment failed via webhook',
+        billingPeriodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : undefined,
+        billingPeriodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : undefined,
+        invoiceId: invoice.id,
+      };
 
-      await payment.save();
+      await this.dbServiceClient.createPayment(paymentData);
 
       // Update subscription status to past due
-      await this.subscriptionModel
-        .findByIdAndUpdate(subscription._id, {
-          status: SubscriptionStatus.PAST_DUE,
-        })
-        .exec();
+      await this.dbServiceClient.updateSubscriptionByStripeSubscriptionId(invoice.subscription as string, {
+        status: SubscriptionStatus.PAST_DUE,
+      });
 
-      this.logger.log(`Payment failed for subscription: ${subscription._id}`);
+      this.logger.log(
+        `Payment failed for subscription: ${subscription._id}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to handle payment failed: ${error.message}`);
       throw error;
@@ -328,25 +310,22 @@ export class WebhookService {
     paymentIntent: Stripe.PaymentIntent,
   ): Promise<void> {
     try {
-      const payment = await this.paymentModel
-        .findOne({ stripePaymentIntentId: paymentIntent.id })
-        .exec();
+      const existingPayment = await this.dbServiceClient.findPaymentByStripePaymentIntentId(paymentIntent.id);
 
-      if (!payment) {
-        this.logger.warn(
-          `Payment not found for payment intent: ${paymentIntent.id}`,
-        );
-        return;
-      }
-
-      await this.paymentModel
-        .findByIdAndUpdate(payment._id, {
+      if (existingPayment) {
+        await this.dbServiceClient.updatePaymentByStripePaymentIntentId(paymentIntent.id, {
           status: PaymentStatus.SUCCEEDED,
           paidAt: new Date(),
-        })
-        .exec();
+        });
 
-      this.logger.log(`Payment intent succeeded: ${paymentIntent.id}`);
+        this.logger.log(
+          `Updated payment status to succeeded: ${paymentIntent.id}`,
+        );
+      } else {
+        this.logger.log(
+          `Payment intent succeeded but no payment record found: ${paymentIntent.id}`,
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Failed to handle payment intent succeeded: ${error.message}`,
@@ -363,26 +342,22 @@ export class WebhookService {
     paymentIntent: Stripe.PaymentIntent,
   ): Promise<void> {
     try {
-      const payment = await this.paymentModel
-        .findOne({ stripePaymentIntentId: paymentIntent.id })
-        .exec();
+      const existingPayment = await this.dbServiceClient.findPaymentByStripePaymentIntentId(paymentIntent.id);
 
-      if (!payment) {
-        this.logger.warn(
-          `Payment not found for payment intent: ${paymentIntent.id}`,
-        );
-        return;
-      }
-
-      await this.paymentModel
-        .findByIdAndUpdate(payment._id, {
+      if (existingPayment) {
+        await this.dbServiceClient.updatePaymentByStripePaymentIntentId(paymentIntent.id, {
           status: PaymentStatus.FAILED,
-          failureReason:
-            paymentIntent.last_payment_error?.message || 'Payment failed',
-        })
-        .exec();
+          failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+        });
 
-      this.logger.log(`Payment intent failed: ${paymentIntent.id}`);
+        this.logger.log(
+          `Updated payment status to failed: ${paymentIntent.id}`,
+        );
+      } else {
+        this.logger.log(
+          `Payment intent failed but no payment record found: ${paymentIntent.id}`,
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Failed to handle payment intent failed: ${error.message}`,
@@ -398,18 +373,20 @@ export class WebhookService {
    */
   private mapStripeStatus(stripeStatus: string): SubscriptionStatus {
     switch (stripeStatus) {
+      case 'trialing':
+        return SubscriptionStatus.TRIAL;
       case 'active':
         return SubscriptionStatus.ACTIVE;
       case 'past_due':
         return SubscriptionStatus.PAST_DUE;
       case 'canceled':
+      case 'cancelled':
         return SubscriptionStatus.CANCELED;
       case 'unpaid':
         return SubscriptionStatus.UNPAID;
-      case 'trialing':
-        return SubscriptionStatus.TRIAL;
       default:
-        return SubscriptionStatus.ACTIVE;
+        this.logger.warn(`Unknown Stripe status: ${stripeStatus}`);
+        return SubscriptionStatus.UNPAID;
     }
   }
 }
