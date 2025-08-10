@@ -58,7 +58,7 @@ jobs:
       -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
       "${{ secrets.COOLIFY_STAGING_WEBHOOK_URL }}"
 
-- name: Trigger Coolify deploy (production)
+-name: Trigger Coolify deploy (production)
   if: github.ref_name == 'main'
   run: |
     curl -fsSL -X POST \
