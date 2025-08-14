@@ -31,7 +31,6 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
-
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.1.2",
     "@nestjs/throttler": "^6.4.0",
@@ -47,7 +46,6 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.1.0",
     "lint-staged": "^12.3.2",
-
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "stripe": "^17.5.0"
@@ -94,7 +92,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "modules/payment/**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
