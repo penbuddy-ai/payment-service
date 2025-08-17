@@ -35,6 +35,29 @@ export class AppController {
   }
 
   /**
+   * Health check endpoint (alternative path)
+   * @returns Service status and basic information
+   */
+  @Get('health')
+  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiResponse({
+    status: 200,
+    description: 'Service is running',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'OK' },
+        service: { type: 'string', example: 'Penpal AI Payment Service' },
+        version: { type: 'string', example: '1.0.0' },
+        timestamp: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
+      },
+    },
+  })
+  getHealthAlternative() {
+    return this.appService.getHealth();
+  }
+
+  /**
    * Service information endpoint
    * @returns Detailed service information
    */
