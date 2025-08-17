@@ -1,8 +1,9 @@
-import { Module, Global } from '@nestjs/common';
-import { HttpClientLogger } from './interceptors/http-client.interceptor';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { StripeService } from './services/stripe.service';
-import { DbServiceClient } from './services/db-service.client';
+import { Global, Module } from "@nestjs/common";
+
+import { HttpClientLogger } from "./interceptors/http-client.interceptor";
+import { LoggingInterceptor } from "./interceptors/logging.interceptor";
+import { DbServiceClient } from "./services/db-service.client";
+import { StripeService } from "./services/stripe.service";
 
 /**
  * Common module for shared services and interceptors
@@ -23,4 +24,4 @@ import { DbServiceClient } from './services/db-service.client';
     DbServiceClient,
   ],
 })
-export class CommonModule {} 
+export class CommonModule {}

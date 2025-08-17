@@ -1,31 +1,32 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { StripeService } from '../../common/services/stripe.service';
-import { 
-  DbServiceClient, 
-  Subscription, 
+} from "@nestjs/common";
+
+import {
   CreateSubscriptionDto as DbCreateSubscriptionDto,
-  UpdateSubscriptionDto as DbUpdateSubscriptionDto
-} from '../../common/services/db-service.client';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+  DbServiceClient,
+  UpdateSubscriptionDto as DbUpdateSubscriptionDto,
+  Subscription,
+} from "../../common/services/db-service.client";
+import { StripeService } from "../../common/services/stripe.service";
+import { CreateSubscriptionDto } from "./dto/create-subscription.dto";
+import { UpdateSubscriptionDto } from "./dto/update-subscription.dto";
 
 // Enums for compatibility
 export enum SubscriptionStatus {
-  TRIAL = 'trial',
-  ACTIVE = 'active',
-  PAST_DUE = 'past_due',
-  CANCELED = 'canceled',
-  UNPAID = 'unpaid',
+  TRIAL = "trial",
+  ACTIVE = "active",
+  PAST_DUE = "past_due",
+  CANCELED = "canceled",
+  UNPAID = "unpaid",
 }
 
 export enum SubscriptionPlan {
-  MONTHLY = 'monthly',
-  YEARLY = 'yearly',
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
 }
 
 /**
@@ -60,7 +61,7 @@ export class SubscriptionService {
       const existingSubscription = await this.findByUserId(userId);
       if (existingSubscription) {
         throw new BadRequestException(
-          'User already has an active subscription',
+          "User already has an active subscription",
         );
       }
 
@@ -81,7 +82,7 @@ export class SubscriptionService {
         userId,
         stripeCustomerId: stripeCustomer.id,
         status: SubscriptionStatus.TRIAL,
-        plan: plan as 'monthly' | 'yearly',
+        plan: plan as "monthly" | "yearly",
         trialStart,
         trialEnd,
         isTrialActive: true,
@@ -97,7 +98,8 @@ export class SubscriptionService {
 
       // Subscription data is already in db-service - no need to update auth-service
       return savedSubscription;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to create subscription: ${error.message}`);
       throw error;
     }
@@ -111,8 +113,8 @@ export class SubscriptionService {
   async createSubscriptionWithCard(
     createSubscriptionDto: CreateSubscriptionDto & { paymentMethodId: string },
   ): Promise<Subscription> {
-    const { userId, email, name, plan, paymentMethodId } =
-      createSubscriptionDto;
+    const { userId, email, name, plan, paymentMethodId }
+      = createSubscriptionDto;
     try {
       // Check if user already has a subscription
       const existingSubscription = await this.findByUserId(userId);
@@ -127,8 +129,8 @@ export class SubscriptionService {
 
           // If the subscription doesn't have a validated card yet, validate it
           if (
-            !existingSubscription.cardValidated &&
-            existingSubscription.stripeCustomerId
+            !existingSubscription.cardValidated
+            && existingSubscription.stripeCustomerId
           ) {
             await this.validateCardForExistingSubscription(
               existingSubscription.stripeCustomerId,
@@ -146,7 +148,8 @@ export class SubscriptionService {
           // Subscription data is already updated in db-service
 
           return updatedSubscription;
-        } else {
+        }
+        else {
           // Create a new subscription with the same plan
           const newSubscription = await this.create(createSubscriptionDto);
           return newSubscription;
@@ -188,7 +191,7 @@ export class SubscriptionService {
         userId,
         stripeCustomerId: stripeCustomer.id,
         status: SubscriptionStatus.TRIAL,
-        plan: plan as 'monthly' | 'yearly',
+        plan: plan as "monthly" | "yearly",
         trialStart,
         trialEnd,
         isTrialActive: true,
@@ -206,7 +209,8 @@ export class SubscriptionService {
       // Subscription data is already in db-service
 
       return savedSubscription;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to create subscription with card: ${error.message}`,
       );
@@ -242,7 +246,8 @@ export class SubscriptionService {
       this.logger.log(
         `Validated card for existing subscription user ${userId}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to validate card for existing subscription: ${error.message}`,
       );
@@ -261,45 +266,45 @@ export class SubscriptionService {
 
   /**
    * Find subscription by ID
-   * @param id Subscription ID
+   * @param _id Subscription ID
    * @returns Subscription
    */
-  async findById(id: string): Promise<Subscription> {
+  async findById(_id: string): Promise<Subscription> {
     // For now, we'll search by user ID - in a real implementation, you might need to add findById to the client
-    throw new NotFoundException('Find by ID not yet implemented - use findByUserId instead');
+    throw new NotFoundException("Find by ID not yet implemented - use findByUserId instead");
   }
 
   /**
    * Update subscription
-   * @param id Subscription ID
-   * @param updateSubscriptionDto Update data
+   * @param _id Subscription ID
+   * @param _updateSubscriptionDto Update data
    * @returns Updated subscription
    */
   async update(
-    id: string,
-    updateSubscriptionDto: UpdateSubscriptionDto,
+    _id: string,
+    _updateSubscriptionDto: UpdateSubscriptionDto,
   ): Promise<Subscription> {
     // For now, we'll throw an error since we need user ID to update
-    throw new NotFoundException('Update by ID not yet implemented - use updateByUserId instead');
+    throw new NotFoundException("Update by ID not yet implemented - use updateByUserId instead");
   }
 
   /**
    * Start paid subscription after trial
    * @param userId User ID
-   * @param paymentMethodId Stripe payment method ID
+   * @param _paymentMethodId Stripe payment method ID
    * @returns Updated subscription
    */
   async startPaidSubscription(
     userId: string,
-    paymentMethodId: string,
+    _paymentMethodId: string,
   ): Promise<Subscription> {
     const subscription = await this.findByUserId(userId);
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new NotFoundException("Subscription not found");
     }
 
     if (subscription.status !== SubscriptionStatus.TRIAL) {
-      throw new BadRequestException('Subscription is not in trial status');
+      throw new BadRequestException("Subscription is not in trial status");
     }
 
     try {
@@ -318,7 +323,8 @@ export class SubscriptionService {
       const nextBillingDate = new Date();
       if (subscription.plan === SubscriptionPlan.MONTHLY) {
         nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
-      } else {
+      }
+      else {
         nextBillingDate.setFullYear(nextBillingDate.getFullYear() + 1);
       }
 
@@ -337,7 +343,8 @@ export class SubscriptionService {
       this.logger.log(`Started paid subscription for user ${userId}`);
       // Subscription data is already updated in db-service
       return updatedSubscription;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to start paid subscription: ${error.message}`);
       throw error;
     }
@@ -355,7 +362,7 @@ export class SubscriptionService {
   ): Promise<Subscription> {
     const subscription = await this.findByUserId(userId);
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new NotFoundException("Subscription not found");
     }
 
     try {
@@ -385,7 +392,8 @@ export class SubscriptionService {
       this.logger.log(`Canceled subscription for user ${userId}`);
       // Subscription data is already updated in db-service
       return updatedSubscription;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to cancel subscription: ${error.message}`);
       throw error;
     }
@@ -403,7 +411,7 @@ export class SubscriptionService {
   ): Promise<Subscription> {
     const subscription = await this.findByUserId(userId);
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new NotFoundException("Subscription not found");
     }
 
     try {
@@ -416,7 +424,8 @@ export class SubscriptionService {
       this.logger.log(`Changed subscription plan for user ${userId} to ${newPlan}`);
       // Subscription data is already updated in db-service
       return updatedSubscription;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to change subscription plan: ${error.message}`);
       throw error;
     }
@@ -448,11 +457,11 @@ export class SubscriptionService {
   private getPriceId(plan: SubscriptionPlan): string {
     switch (plan) {
       case SubscriptionPlan.MONTHLY:
-        return process.env.STRIPE_MONTHLY_PRICE_ID || 'price_monthly_default';
+        return process.env.STRIPE_MONTHLY_PRICE_ID || "price_monthly_default";
       case SubscriptionPlan.YEARLY:
-        return process.env.STRIPE_YEARLY_PRICE_ID || 'price_yearly_default';
+        return process.env.STRIPE_YEARLY_PRICE_ID || "price_yearly_default";
       default:
-        throw new BadRequestException('Invalid subscription plan');
+        throw new BadRequestException("Invalid subscription plan");
     }
   }
 }

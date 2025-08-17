@@ -2,7 +2,7 @@ name: Build & Push (service) + Coolify Deploy
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   build-and-push:
@@ -64,4 +64,3 @@ jobs:
           curl -fsSL -X POST \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
             "${{ secrets.COOLIFY_PROD_WEBHOOK_URL }}"
-

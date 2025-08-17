@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthServiceClient {
@@ -8,11 +8,11 @@ export class AuthServiceClient {
   private readonly serviceKey: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.authServiceUrl =
-      this.configService.get<string>('AUTH_SERVICE_URL') ||
-      'http://localhost:3002/api/v1';
-    this.serviceKey =
-      this.configService.get<string>('SERVICE_API_KEY') || 'default-key';
+    this.authServiceUrl
+      = this.configService.get<string>("AUTH_SERVICE_URL")
+        || "http://localhost:3002/api/v1";
+    this.serviceKey
+      = this.configService.get<string>("SERVICE_API_KEY") || "default-key";
   }
 
   /**
@@ -21,8 +21,8 @@ export class AuthServiceClient {
   async updateUserSubscription(
     userId: string,
     subscriptionData: {
-      plan?: 'monthly' | 'yearly';
-      status?: 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid';
+      plan?: "monthly" | "yearly";
+      status?: "trial" | "active" | "past_due" | "canceled" | "unpaid";
       trialEnd?: Date;
     },
   ): Promise<void> {
@@ -30,11 +30,11 @@ export class AuthServiceClient {
       const response = await fetch(
         `${this.authServiceUrl}/users/${userId}/subscription`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            'Content-Type': 'application/json',
-            'x-service-key': this.serviceKey,
-            'x-service-name': 'payment-service',
+            "Content-Type": "application/json",
+            "x-service-key": this.serviceKey,
+            "x-service-name": "payment-service",
           },
           body: JSON.stringify(subscriptionData),
         },
@@ -46,12 +46,14 @@ export class AuthServiceClient {
           `Failed to update user subscription via auth service: ${error.message || response.statusText}`,
         );
         // Don't throw error - subscription creation should still succeed even if user update fails
-      } else {
+      }
+      else {
         this.logger.log(
           `Successfully updated user ${userId} subscription via auth service`,
         );
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Error calling auth service to update user subscription: ${error.message}`,
       );

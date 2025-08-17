@@ -1,16 +1,17 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { CacheModule } from '@nestjs/cache-manager';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { CommonModule } from './common/common.module';
-import { SubscriptionModule } from './modules/subscription/subscription.module';
-import { PaymentModule } from './modules/payment/payment.module';
-import { WebhookModule } from './modules/webhook/webhook.module';
-import { BillingModule } from './modules/billing/billing.module';
-import { HttpErrorInterceptor } from './common/interceptors/http-error.interceptor';
+import { CacheModule } from "@nestjs/cache-manager";
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { APP_INTERCEPTOR } from "@nestjs/core";
+import { ThrottlerModule } from "@nestjs/throttler";
+
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { CommonModule } from "./common/common.module";
+import { HttpErrorInterceptor } from "./common/interceptors/http-error.interceptor";
+import { BillingModule } from "./modules/billing/billing.module";
+import { PaymentModule } from "./modules/payment/payment.module";
+import { SubscriptionModule } from "./modules/subscription/subscription.module";
+import { WebhookModule } from "./modules/webhook/webhook.module";
 
 /**
  * Main application module for the Payment Service
@@ -21,7 +22,7 @@ import { HttpErrorInterceptor } from './common/interceptors/http-error.intercept
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: [".env.local", ".env"],
     }),
 
     // Database access is now handled via db-service
@@ -31,8 +32,8 @@ import { HttpErrorInterceptor } from './common/interceptors/http-error.intercept
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => [
         {
-          ttl: configService.get('THROTTLE_TTL', 60000), // 1 minute
-          limit: configService.get('THROTTLE_LIMIT', 10), // 10 requests per minute
+          ttl: configService.get("THROTTLE_TTL", 60000), // 1 minute
+          limit: configService.get("THROTTLE_LIMIT", 10), // 10 requests per minute
         },
       ],
       inject: [ConfigService],

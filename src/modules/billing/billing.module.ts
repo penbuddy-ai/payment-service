@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
-import { BillingController } from './billing.controller';
-import { BillingService } from './billing.service';
-import { CommonModule } from '../../common/common.module';
+import { Module } from "@nestjs/common";
+
+import { CommonModule } from "../../common/common.module";
+import { BillingController } from "./billing.controller";
+import { BillingService } from "./billing.service";
 
 /**
  * Billing module

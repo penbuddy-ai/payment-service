@@ -1,12 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AppService } from './app.service';
+import { Controller, Get } from "@nestjs/common";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+
+import { AppService } from "./app.service";
 
 /**
  * Main application controller
  * Provides health check and basic service information
  */
-@ApiTags('Health')
+@ApiTags("Health")
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
@@ -16,17 +17,17 @@ export class AppController {
    * @returns Service status and basic information
    */
   @Get()
-  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiOperation({ summary: "Health check endpoint" })
   @ApiResponse({
     status: 200,
-    description: 'Service is running',
+    description: "Service is running",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        status: { type: 'string', example: 'OK' },
-        service: { type: 'string', example: 'Penpal AI Payment Service' },
-        version: { type: 'string', example: '1.0.0' },
-        timestamp: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
+        status: { type: "string", example: "OK" },
+        service: { type: "string", example: "Penpal AI Payment Service" },
+        version: { type: "string", example: "1.0.0" },
+        timestamp: { type: "string", example: "2024-01-01T00:00:00.000Z" },
       },
     },
   })
@@ -38,18 +39,18 @@ export class AppController {
    * Health check endpoint (alternative path)
    * @returns Service status and basic information
    */
-  @Get('health')
-  @ApiOperation({ summary: 'Health check endpoint' })
+  @Get("health")
+  @ApiOperation({ summary: "Health check endpoint" })
   @ApiResponse({
     status: 200,
-    description: 'Service is running',
+    description: "Service is running",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        status: { type: 'string', example: 'OK' },
-        service: { type: 'string', example: 'Penpal AI Payment Service' },
-        version: { type: 'string', example: '1.0.0' },
-        timestamp: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
+        status: { type: "string", example: "OK" },
+        service: { type: "string", example: "Penpal AI Payment Service" },
+        version: { type: "string", example: "1.0.0" },
+        timestamp: { type: "string", example: "2024-01-01T00:00:00.000Z" },
       },
     },
   })
@@ -61,11 +62,11 @@ export class AppController {
    * Service information endpoint
    * @returns Detailed service information
    */
-  @Get('info')
-  @ApiOperation({ summary: 'Get service information' })
+  @Get("info")
+  @ApiOperation({ summary: "Get service information" })
   @ApiResponse({
     status: 200,
-    description: 'Service information',
+    description: "Service information",
   })
   getInfo() {
     return this.appService.getInfo();

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 
 /**
  * HTTP Client logging utility for outbound requests
@@ -6,20 +6,20 @@ import { Injectable, Logger } from '@nestjs/common';
  */
 @Injectable()
 export class HttpClientLogger {
-  private readonly logger = new Logger('HTTP_CLIENT');
+  private readonly logger = new Logger("HTTP_CLIENT");
 
   /**
    * Log outbound HTTP request
    */
   logRequest(method: string, url: string, options?: any): string {
     const requestId = this.generateRequestId();
-    
+
     this.logger.log(
-      `🔵 OUTBOUND REQUEST [${requestId}]\n` +
-      `┌─ Method: ${method.toUpperCase()}\n` +
-      `├─ URL: ${url}\n` +
-      `├─ Headers: ${JSON.stringify(this.sanitizeHeaders(options?.headers || {}))}\n` +
-      `└─ Body: ${this.sanitizeBody(options?.body)}`
+      `🔵 OUTBOUND REQUEST [${requestId}]\n`
+      + `┌─ Method: ${method.toUpperCase()}\n`
+      + `├─ URL: ${url}\n`
+      + `├─ Headers: ${JSON.stringify(this.sanitizeHeaders(options?.headers || {}))}\n`
+      + `└─ Body: ${this.sanitizeBody(options?.body)}`,
     );
 
     return requestId;
@@ -29,26 +29,27 @@ export class HttpClientLogger {
    * Log outbound HTTP response
    */
   logResponse(
-    requestId: string, 
-    status: number, 
-    duration: number, 
+    requestId: string,
+    status: number,
+    duration: number,
     responseData?: any,
-    error?: any
+    error?: any,
   ): void {
     if (error) {
       this.logger.error(
-        `🔴 OUTBOUND ERROR [${requestId}]\n` +
-        `┌─ Status: ${status || 'N/A'}\n` +
-        `├─ Duration: ${duration}ms\n` +
-        `├─ Error: ${error.message}\n` +
-        `└─ Stack: ${error.stack || 'N/A'}`
+        `🔴 OUTBOUND ERROR [${requestId}]\n`
+        + `┌─ Status: ${status || "N/A"}\n`
+        + `├─ Duration: ${duration}ms\n`
+        + `├─ Error: ${error.message}\n`
+        + `└─ Stack: ${error.stack || "N/A"}`,
       );
-    } else {
+    }
+    else {
       this.logger.log(
-        `🟢 OUTBOUND RESPONSE [${requestId}]\n` +
-        `┌─ Status: ${status}\n` +
-        `├─ Duration: ${duration}ms\n` +
-        `└─ Data: ${this.sanitizeResponseData(responseData)}`
+        `🟢 OUTBOUND RESPONSE [${requestId}]\n`
+        + `┌─ Status: ${status}\n`
+        + `├─ Duration: ${duration}ms\n`
+        + `└─ Data: ${this.sanitizeResponseData(responseData)}`,
       );
     }
   }
@@ -58,26 +59,28 @@ export class HttpClientLogger {
    */
   async loggedFetch(url: string, options: any = {}): Promise<Response> {
     const startTime = Date.now();
-    const requestId = this.logRequest('fetch', url, options);
+    const requestId = this.logRequest("fetch", url, options);
 
     try {
       const response = await fetch(url, options);
       const duration = Date.now() - startTime;
-      
+
       // Clone response to read body without consuming it
       const responseClone = response.clone();
       let responseData;
-      
+
       try {
         responseData = await responseClone.json();
-      } catch {
+      }
+      catch {
         responseData = await responseClone.text();
       }
 
       this.logResponse(requestId, response.status, duration, responseData);
-      
+
       return response;
-    } catch (error) {
+    }
+    catch (error) {
       const duration = Date.now() - startTime;
       this.logResponse(requestId, 0, duration, null, error);
       throw error;
@@ -96,24 +99,24 @@ export class HttpClientLogger {
    */
   private sanitizeHeaders(headers: any): any {
     const sensitiveHeaders = [
-      'authorization',
-      'x-api-key',
-      'x-service-key',
-      'stripe-signature',
-      'cookie'
+      "authorization",
+      "x-api-key",
+      "x-service-key",
+      "stripe-signature",
+      "cookie",
     ];
-    
+
     const sanitized = { ...headers };
-    
-    sensitiveHeaders.forEach(header => {
+
+    sensitiveHeaders.forEach((header) => {
       const lowerHeader = header.toLowerCase();
-      Object.keys(sanitized).forEach(key => {
+      Object.keys(sanitized).forEach((key) => {
         if (key.toLowerCase() === lowerHeader) {
-          sanitized[key] = '[REDACTED]';
+          sanitized[key] = "[REDACTED]";
         }
       });
     });
-    
+
     return sanitized;
   }
 
@@ -122,19 +125,20 @@ export class HttpClientLogger {
    */
   private sanitizeBody(body: any): string {
     if (!body) {
-      return 'null';
+      return "null";
     }
 
-    if (typeof body === 'string') {
+    if (typeof body === "string") {
       try {
         const parsed = JSON.parse(body);
         return this.sanitizeBodyObject(parsed);
-      } catch {
+      }
+      catch {
         return body.length > 500 ? `${body.substring(0, 500)}...` : body;
       }
     }
 
-    if (typeof body === 'object') {
+    if (typeof body === "object") {
       return this.sanitizeBodyObject(body);
     }
 
@@ -146,22 +150,22 @@ export class HttpClientLogger {
    */
   private sanitizeBodyObject(body: any): string {
     const sensitiveFields = [
-      'password',
-      'token',
-      'secret',
-      'key',
-      'paymentMethodId',
-      'cardNumber',
-      'cvv',
-      'expiryDate',
-      'client_secret'
+      "password",
+      "token",
+      "secret",
+      "key",
+      "paymentMethodId",
+      "cardNumber",
+      "cvv",
+      "expiryDate",
+      "client_secret",
     ];
 
     const sanitized = { ...body };
-    
-    sensitiveFields.forEach(field => {
+
+    sensitiveFields.forEach((field) => {
       if (sanitized[field]) {
-        sanitized[field] = '[REDACTED]';
+        sanitized[field] = "[REDACTED]";
       }
     });
 
@@ -173,19 +177,19 @@ export class HttpClientLogger {
    */
   private sanitizeResponseData(data: any): string {
     if (!data) {
-      return 'null';
+      return "null";
     }
 
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       return data.length > 500 ? `${data.substring(0, 500)}...` : data;
     }
 
-    if (typeof data === 'object') {
+    if (typeof data === "object") {
       // Sanitize sensitive fields in response
       const sanitized = this.sanitizeResponseObject(data);
       const jsonString = JSON.stringify(sanitized, null, 2);
-      return jsonString.length > 1000 
-        ? `${jsonString.substring(0, 1000)}...` 
+      return jsonString.length > 1000
+        ? `${jsonString.substring(0, 1000)}...`
         : jsonString;
     }
 
@@ -196,16 +200,16 @@ export class HttpClientLogger {
    * Sanitize response object
    */
   private sanitizeResponseObject(obj: any): any {
-    if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj !== "object" || obj === null) {
       return obj;
     }
 
     const sensitiveFields = [
-      'client_secret',
-      'secret',
-      'key',
-      'token',
-      'password'
+      "client_secret",
+      "secret",
+      "key",
+      "token",
+      "password",
     ];
 
     if (Array.isArray(obj)) {
@@ -213,15 +217,16 @@ export class HttpClientLogger {
     }
 
     const sanitized = { ...obj };
-    
-    Object.keys(sanitized).forEach(key => {
+
+    Object.keys(sanitized).forEach((key) => {
       if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof sanitized[key] === 'object') {
+        sanitized[key] = "[REDACTED]";
+      }
+      else if (typeof sanitized[key] === "object") {
         sanitized[key] = this.sanitizeResponseObject(sanitized[key]);
       }
     });
 
     return sanitized;
   }
-} 
+}

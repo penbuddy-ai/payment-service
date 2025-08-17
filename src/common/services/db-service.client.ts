@@ -1,14 +1,14 @@
-import { Injectable, Logger, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import axios, { AxiosInstance } from "axios";
 
 // Types for API calls
-export interface Subscription {
+export type Subscription = {
   _id?: string;
   userId: string;
   stripeCustomerId: string;
   stripeSubscriptionId?: string;
-  status: 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid';
-  plan: 'monthly' | 'yearly';
+  status: "trial" | "active" | "past_due" | "canceled" | "unpaid";
+  plan: "monthly" | "yearly";
   trialStart?: Date;
   trialEnd?: Date;
   currentPeriodStart?: Date;
@@ -24,16 +24,16 @@ export interface Subscription {
   metadata: Record<string, any>;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
-export interface Payment {
+export type Payment = {
   _id?: string;
   userId: string;
   subscriptionId: string;
   stripePaymentIntentId: string;
   stripeChargeId?: string;
-  status: 'pending' | 'succeeded' | 'failed' | 'canceled' | 'refunded';
-  paymentMethod: 'card' | 'sepa_debit' | 'paypal';
+  status: "pending" | "succeeded" | "failed" | "canceled" | "refunded";
+  paymentMethod: "card" | "sepa_debit" | "paypal";
   amount: number;
   currency: string;
   description?: string;
@@ -49,14 +49,14 @@ export interface Payment {
   metadata: Record<string, any>;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
-export interface CreateSubscriptionDto {
+export type CreateSubscriptionDto = {
   userId: string;
   stripeCustomerId: string;
   stripeSubscriptionId?: string;
-  status?: 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid';
-  plan?: 'monthly' | 'yearly';
+  status?: "trial" | "active" | "past_due" | "canceled" | "unpaid";
+  plan?: "monthly" | "yearly";
   trialStart?: Date;
   trialEnd?: Date;
   currentPeriodStart?: Date;
@@ -70,12 +70,12 @@ export interface CreateSubscriptionDto {
   currency?: string;
   isTrialActive?: boolean;
   metadata?: Record<string, any>;
-}
+};
 
-export interface UpdateSubscriptionDto {
+export type UpdateSubscriptionDto = {
   stripeSubscriptionId?: string;
-  status?: 'trial' | 'active' | 'past_due' | 'canceled' | 'unpaid';
-  plan?: 'monthly' | 'yearly';
+  status?: "trial" | "active" | "past_due" | "canceled" | "unpaid";
+  plan?: "monthly" | "yearly";
   trialStart?: Date;
   trialEnd?: Date;
   currentPeriodStart?: Date;
@@ -89,15 +89,15 @@ export interface UpdateSubscriptionDto {
   currency?: string;
   isTrialActive?: boolean;
   metadata?: Record<string, any>;
-}
+};
 
-export interface CreatePaymentDto {
+export type CreatePaymentDto = {
   userId: string;
   subscriptionId: string;
   stripePaymentIntentId: string;
   stripeChargeId?: string;
-  status: 'pending' | 'succeeded' | 'failed' | 'canceled' | 'refunded';
-  paymentMethod: 'card' | 'sepa_debit' | 'paypal';
+  status: "pending" | "succeeded" | "failed" | "canceled" | "refunded";
+  paymentMethod: "card" | "sepa_debit" | "paypal";
   amount: number;
   currency?: string;
   description?: string;
@@ -111,12 +111,12 @@ export interface CreatePaymentDto {
   billingPeriodEnd?: Date;
   isTrial?: boolean;
   metadata?: Record<string, any>;
-}
+};
 
-export interface UpdatePaymentDto {
+export type UpdatePaymentDto = {
   stripeChargeId?: string;
-  status?: 'pending' | 'succeeded' | 'failed' | 'canceled' | 'refunded';
-  paymentMethod?: 'card' | 'sepa_debit' | 'paypal';
+  status?: "pending" | "succeeded" | "failed" | "canceled" | "refunded";
+  paymentMethod?: "card" | "sepa_debit" | "paypal";
   amount?: number;
   currency?: string;
   description?: string;
@@ -130,7 +130,7 @@ export interface UpdatePaymentDto {
   billingPeriodEnd?: Date;
   isTrial?: boolean;
   metadata?: Record<string, any>;
-}
+};
 
 /**
  * Client for communicating with the DB service
@@ -144,17 +144,17 @@ export class DbServiceClient {
   private readonly serviceName: string;
 
   constructor() {
-    this.dbServiceUrl = process.env.DB_SERVICE_URL || 'http://localhost:3001';
-    this.apiKey = process.env.DB_SERVICE_API_KEY || 'default-api-key';
-    this.serviceName = 'payment-service';
+    this.dbServiceUrl = process.env.DB_SERVICE_URL || "http://localhost:3001";
+    this.apiKey = process.env.DB_SERVICE_API_KEY || "default-api-key";
+    this.serviceName = "payment-service";
 
     this.httpClient = axios.create({
       baseURL: this.dbServiceUrl,
       timeout: 30000,
       headers: {
-        'x-api-key': this.apiKey,
-        'x-service-name': this.serviceName,
-        'Content-Type': 'application/json',
+        "x-api-key": this.apiKey,
+        "x-service-name": this.serviceName,
+        "Content-Type": "application/json",
       },
     });
 
@@ -169,30 +169,33 @@ export class DbServiceClient {
     if (error.response) {
       // Server responded with error status
       const { status, statusText, data } = error.response;
-      const url = error.config?.url || 'unknown';
-      const method = error.config?.method?.toUpperCase() || 'unknown';
-      
+      const url = error.config?.url || "unknown";
+      const method = error.config?.method?.toUpperCase() || "unknown";
+
       let errorMessage = `DB Service ${method} ${url} failed: ${status} ${statusText}`;
-      
+
       // Extract meaningful error messages
       let userMessage = statusText;
       if (data) {
-        if (typeof data === 'string') {
+        if (typeof data === "string") {
           userMessage = data;
-        } else if (data.message) {
+        }
+        else if (data.message) {
           if (Array.isArray(data.message)) {
-            userMessage = data.message.join(', ');
-          } else {
+            userMessage = data.message.join(", ");
+          }
+          else {
             userMessage = data.message;
           }
-        } else if (data.error) {
+        }
+        else if (data.error) {
           userMessage = data.error;
         }
         errorMessage += ` - ${userMessage}`;
       }
-      
+
       this.logger.error(errorMessage);
-      
+
       // Map HTTP status codes to appropriate NestJS exceptions
       switch (status) {
         case 400:
@@ -212,14 +215,16 @@ export class DbServiceClient {
         default:
           throw new HttpException(userMessage, status);
       }
-    } else if (error.request) {
+    }
+    else if (error.request) {
       // Request was made but no response received
-      const message = 'DB Service is not responding';
+      const message = "DB Service is not responding";
       this.logger.error(`DB Service request failed: No response received - ${error.message}`);
       throw new HttpException(message, HttpStatus.SERVICE_UNAVAILABLE);
-    } else {
+    }
+    else {
       // Something else happened
-      const message = 'Failed to setup request to DB Service';
+      const message = "Failed to setup request to DB Service";
       this.logger.error(`DB Service request setup failed: ${error.message}`);
       throw new HttpException(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -228,9 +233,10 @@ export class DbServiceClient {
   // Subscription methods
   async createSubscription(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
     try {
-      const response = await this.httpClient.post('/subscriptions', createSubscriptionDto);
+      const response = await this.httpClient.post("/subscriptions", createSubscriptionDto);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to create subscription: ${error.message}`);
       this.handleHttpError(error);
     }
@@ -240,7 +246,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/subscriptions/user/${userId}`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       if (error.response?.status === 404) {
         this.logger.debug(`No subscription found for user ${userId} (this is normal for new users)`);
         return null;
@@ -254,7 +261,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/subscriptions/stripe-subscription/${stripeSubscriptionId}`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       if (error.response?.status === 404) {
         this.logger.debug(`No subscription found for Stripe subscription ID ${stripeSubscriptionId}`);
         return null;
@@ -268,7 +276,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.put(`/subscriptions/user/${userId}`, updateSubscriptionDto);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to update subscription by user ID: ${error.message}`);
       throw error;
     }
@@ -284,7 +293,8 @@ export class DbServiceClient {
         updateSubscriptionDto,
       );
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to update subscription by Stripe subscription ID: ${error.message}`);
       throw error;
     }
@@ -294,7 +304,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/subscriptions/user/${userId}/active`);
       return response.data.isActive;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to check subscription activity: ${error.message}`);
       throw error;
     }
@@ -309,17 +320,19 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/subscriptions/user/${userId}/status`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to get subscription status: ${error.message}`);
       throw error;
     }
   }
 
-  async changeSubscriptionPlan(userId: string, plan: 'monthly' | 'yearly'): Promise<Subscription> {
+  async changeSubscriptionPlan(userId: string, plan: "monthly" | "yearly"): Promise<Subscription> {
     try {
       const response = await this.httpClient.put(`/subscriptions/user/${userId}/plan`, { plan });
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to change subscription plan: ${error.message}`);
       throw error;
     }
@@ -328,9 +341,10 @@ export class DbServiceClient {
   // Payment methods
   async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     try {
-      const response = await this.httpClient.post('/payments', createPaymentDto);
+      const response = await this.httpClient.post("/payments", createPaymentDto);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to create payment: ${error.message}`);
       throw error;
     }
@@ -340,7 +354,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/payments/stripe-payment-intent/${stripePaymentIntentId}`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       if (error.response?.status === 404) {
         this.logger.debug(`No payment found for Stripe payment intent ID ${stripePaymentIntentId}`);
         return null;
@@ -354,7 +369,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/payments/user/${userId}`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to find payments by user ID: ${error.message}`);
       throw error;
     }
@@ -364,7 +380,8 @@ export class DbServiceClient {
     try {
       const response = await this.httpClient.get(`/payments/subscription/${subscriptionId}`);
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to find payments by subscription ID: ${error.message}`);
       throw error;
     }
@@ -380,7 +397,8 @@ export class DbServiceClient {
         updatePaymentDto,
       );
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to update payment by Stripe payment intent ID: ${error.message}`);
       throw error;
     }
@@ -388,14 +406,15 @@ export class DbServiceClient {
 
   async updatePaymentStatus(
     paymentId: string,
-    status: 'pending' | 'succeeded' | 'failed' | 'canceled' | 'refunded',
+    status: "pending" | "succeeded" | "failed" | "canceled" | "refunded",
   ): Promise<Payment> {
     try {
       const response = await this.httpClient.put(`/payments/${paymentId}/status`, { status });
       return response.data;
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to update payment status: ${error.message}`);
       throw error;
     }
   }
-} 
+}

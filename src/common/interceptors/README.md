@@ -5,6 +5,7 @@ Ce système de logging capture automatiquement toutes les requêtes HTTP entrant
 ## 📋 Fonctionnalités
 
 ### ✅ Requêtes Entrantes (LoggingInterceptor)
+
 - Capture automatique de toutes les requêtes HTTP vers l'API
 - Logs détaillés : méthode, URL, headers, body, query params
 - Mesure du temps de réponse
@@ -12,6 +13,7 @@ Ce système de logging capture automatiquement toutes les requêtes HTTP entrant
 - Génération d'ID unique pour tracking
 
 ### ✅ Requêtes Sortantes (HttpClientLogger)
+
 - Logging des appels vers les services externes (Stripe, Auth Service)
 - Support pour `fetch()` avec wrapper `loggedFetch()`
 - Mesure de performance des appels externes
@@ -20,6 +22,7 @@ Ce système de logging capture automatiquement toutes les requêtes HTTP entrant
 ## 🔒 Sécurité
 
 ### Headers Sensibles Masqués
+
 - `authorization`
 - `cookie`
 - `x-api-key`
@@ -27,6 +30,7 @@ Ce système de logging capture automatiquement toutes les requêtes HTTP entrant
 - `stripe-signature`
 
 ### Champs de Body Sensibles Masqués
+
 - `password`
 - `token`
 - `secret`
@@ -38,16 +42,19 @@ Ce système de logging capture automatiquement toutes les requêtes HTTP entrant
 ## 🚀 Configuration
 
 ### Activation Automatique
+
 Le logging s'active automatiquement en mode développement :
+
 ```typescript
 // Dans main.ts
-const isDevelopment = configService.get('NODE_ENV', 'development') === 'development';
+const isDevelopment = configService.get("NODE_ENV", "development") === "development";
 if (isDevelopment) {
   app.useGlobalInterceptors(new LoggingInterceptor());
 }
 ```
 
 ### Variables d'Environnement
+
 ```bash
 NODE_ENV=development  # Active le logging
 NODE_ENV=production   # Désactive le logging
@@ -56,6 +63,7 @@ NODE_ENV=production   # Désactive le logging
 ## 📖 Exemples d'Usage
 
 ### Requête Entrante
+
 ```
 🔵 INCOMING REQUEST [abc123def]
 ┌─ Method: POST
@@ -84,14 +92,15 @@ NODE_ENV=production   # Désactive le logging
 ```
 
 ### Requête Sortante
+
 ```typescript
 // Utilisation du HttpClientLogger
-import { HttpClientLogger } from '../interceptors/http-client.interceptor';
+import { HttpClientLogger } from "../interceptors/http-client.interceptor";
 
 @Injectable()
 export class MyService {
   private readonly httpLogger = new HttpClientLogger();
-  
+
   async callExternalAPI() {
     // En mode développement, utilise loggedFetch
     const response = await this.httpLogger.loggedFetch(url, options);
@@ -122,6 +131,7 @@ export class MyService {
 ## 🧪 Test du Logging
 
 ### Endpoint de Test
+
 ```bash
 # Test d'une requête avec logging
 curl -X POST http://localhost:3003/api/v1/test-logging \
@@ -130,6 +140,7 @@ curl -X POST http://localhost:3003/api/v1/test-logging \
 ```
 
 ### Résultat Attendu
+
 - Log de la requête entrante avec body sanitisé
 - Log de la réponse sortante
 - ID de tracking pour lier requête/réponse
@@ -137,11 +148,13 @@ curl -X POST http://localhost:3003/api/v1/test-logging \
 ## ⚡ Performance
 
 ### Impact Minimal
+
 - Logging uniquement en développement
 - Sanitisation efficace des données sensibles
 - Pas d'impact sur les performances en production
 
 ### Optimisations
+
 - Troncature des réponses longues (>1000 chars)
 - Clonage des réponses pour éviter la consommation
 - Génération d'ID légers pour tracking
@@ -156,19 +169,21 @@ curl -X POST http://localhost:3003/api/v1/test-logging \
 ## 🔧 Personnalisation
 
 ### Ajouter des Champs Sensibles
+
 ```typescript
 // Dans LoggingInterceptor ou HttpClientLogger
 const sensitiveFields = [
-  'password',
-  'newSensitiveField',  // Ajouter ici
+  "password",
+  "newSensitiveField", // Ajouter ici
   // ...
 ];
 ```
 
 ### Modifier les Seuils de Troncature
+
 ```typescript
 // Modifier les limites dans sanitizeResponseData()
-return jsonString.length > 2000  // Nouvelle limite
+return jsonString.length > 2000 // Nouvelle limite
   ? `${jsonString.substring(0, 2000)}...`
   : jsonString;
-``` 
+```
