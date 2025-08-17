@@ -3,7 +3,8 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import compression from "compression";
+// eslint-disable-next-line style/padding-line-between-statements, ts/no-require-imports
+const compression = require("compression");
 import helmet from "helmet";
 
 import { AppModule } from "./app.module";
@@ -29,7 +30,7 @@ async function bootstrap() {
   }
 
   // Security middleware
-  app.use(helmet());
+  app.use((helmet as any)());
   app.use(compression());
 
   // Enable CORS for microservice communication
