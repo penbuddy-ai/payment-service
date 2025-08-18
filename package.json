@@ -23,7 +23,10 @@
     "prepare": "husky",
     "stripe:setup": "node scripts/setup-stripe.js",
     "stripe:test": "node scripts/test-stripe.js",
-    "webhook:dev": "node scripts/webhook-dev.js"
+    "webhook:dev": "node scripts/webhook-dev.js",
+    "release:patch": "npm version patch && git push origin $(git describe --tags --abbrev=0)",
+    "release:minor": "npm version minor && git push origin $(git describe --tags --abbrev=0)",
+    "release:major": "npm version major && git push origin $(git describe --tags --abbrev=0)"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
