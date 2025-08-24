@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
-import { WebhookController } from './webhook.controller';
-import { WebhookService } from './webhook.service';
-import { StripeService } from '../../common/services/stripe.service';
-import { CommonModule } from '../../common/common.module';
+import { Module } from "@nestjs/common";
+
+import { CommonModule } from "../../common/common.module";
+import { StripeService } from "../../common/services/stripe.service";
+import { WebhookController } from "./webhook.controller";
+import { WebhookService } from "./webhook.service";
 
 /**
  * Webhook module

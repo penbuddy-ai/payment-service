@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 /**
  * Main application service
@@ -12,9 +12,9 @@ export class AppService {
    */
   getHealth() {
     return {
-      status: 'OK',
-      service: 'Penpal AI Payment Service',
-      version: '1.0.0',
+      status: "OK",
+      service: "Penpal AI Payment Service",
+      version: "1.0.0",
       timestamp: new Date().toISOString(),
     };
   }
@@ -25,18 +25,18 @@ export class AppService {
    */
   getInfo() {
     return {
-      name: 'Penpal AI Payment Service',
+      name: "Penpal AI Payment Service",
       description:
-        'Service de gestion des paiements, abonnements et facturation',
-      version: '1.0.0',
+        "Service de gestion des paiements, abonnements et facturation",
+      version: "1.0.0",
       features: [
-        'Gestion des abonnements',
-        'Intégration Stripe',
-        'Paiements récurrents',
-        'Webhooks',
-        'Facturation automatique',
+        "Gestion des abonnements",
+        "Intégration Stripe",
+        "Paiements récurrents",
+        "Webhooks",
+        "Facturation automatique",
       ],
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || "development",
       uptime: process.uptime(),
       memory: process.memoryUsage(),
     };

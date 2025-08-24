@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
-import { PaymentController } from './payment.controller';
-import { PaymentService } from './payment.service';
-import { StripeService } from '../../common/services/stripe.service';
-import { CommonModule } from '../../common/common.module';
+import { Module } from "@nestjs/common";
+
+import { CommonModule } from "../../common/common.module";
+import { StripeService } from "../../common/services/stripe.service";
+import { PaymentController } from "./payment.controller";
+import { PaymentService } from "./payment.service";
 
 /**
  * Payment module

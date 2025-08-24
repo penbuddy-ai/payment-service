@@ -1,15 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import Stripe from 'stripe';
-import { StripeService } from '../../common/services/stripe.service';
-import { 
-  DbServiceClient, 
-  Subscription, 
-  Payment, 
+import { Injectable, Logger } from "@nestjs/common";
+import { Buffer } from "node:buffer";
+import Stripe from "stripe";
+
+import {
   CreatePaymentDto,
-  UpdatePaymentDto,
-  UpdateSubscriptionDto
-} from '../../common/services/db-service.client';
-import { SubscriptionStatus, PaymentStatus } from '../../common/types';
+  DbServiceClient,
+  UpdateSubscriptionDto,
+} from "../../common/services/db-service.client";
+import { StripeService } from "../../common/services/stripe.service";
+import { PaymentStatus, SubscriptionStatus } from "../../common/types";
 
 /**
  * Webhook service
@@ -38,41 +37,41 @@ export class WebhookService {
       this.logger.log(`Processing webhook event: ${event.type}`);
 
       switch (event.type) {
-        case 'customer.subscription.created':
+        case "customer.subscription.created":
           await this.handleSubscriptionCreated(
             event.data.object as Stripe.Subscription,
           );
           break;
 
-        case 'customer.subscription.updated':
+        case "customer.subscription.updated":
           await this.handleSubscriptionUpdated(
             event.data.object as Stripe.Subscription,
           );
           break;
 
-        case 'customer.subscription.deleted':
+        case "customer.subscription.deleted":
           await this.handleSubscriptionDeleted(
             event.data.object as Stripe.Subscription,
           );
           break;
 
-        case 'invoice.payment_succeeded':
+        case "invoice.payment_succeeded":
           await this.handlePaymentSucceeded(
             event.data.object as Stripe.Invoice,
           );
           break;
 
-        case 'invoice.payment_failed':
+        case "invoice.payment_failed":
           await this.handlePaymentFailed(event.data.object as Stripe.Invoice);
           break;
 
-        case 'payment_intent.succeeded':
+        case "payment_intent.succeeded":
           await this.handlePaymentIntentSucceeded(
             event.data.object as Stripe.PaymentIntent,
           );
           break;
 
-        case 'payment_intent.payment_failed':
+        case "payment_intent.payment_failed":
           await this.handlePaymentIntentFailed(
             event.data.object as Stripe.PaymentIntent,
           );
@@ -83,7 +82,8 @@ export class WebhookService {
       }
 
       this.logger.log(`Successfully processed webhook event: ${event.type}`);
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to process webhook: ${error.message}`);
       throw error;
     }
@@ -118,7 +118,8 @@ export class WebhookService {
       this.logger.log(
         `Updated subscription for Stripe subscription: ${subscription.id}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to handle subscription created: ${error.message}`,
       );
@@ -159,7 +160,8 @@ export class WebhookService {
       this.logger.log(
         `Updated subscription for Stripe subscription: ${subscription.id}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to handle subscription updated: ${error.message}`,
       );
@@ -192,7 +194,8 @@ export class WebhookService {
       this.logger.log(
         `Canceled subscription for Stripe subscription: ${subscription.id}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to handle subscription deleted: ${error.message}`,
       );
@@ -223,10 +226,10 @@ export class WebhookService {
         subscriptionId: subscription._id!,
         stripePaymentIntentId: invoice.payment_intent as string,
         status: PaymentStatus.SUCCEEDED,
-        paymentMethod: 'card', // Default, could be determined from payment method
+        paymentMethod: "card", // Default, could be determined from payment method
         amount: invoice.amount_paid,
         currency: invoice.currency,
-        description: invoice.description || 'Subscription payment',
+        description: invoice.description || "Subscription payment",
         paidAt: new Date(),
         billingPeriodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : undefined,
         billingPeriodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : undefined,
@@ -247,7 +250,8 @@ export class WebhookService {
       this.logger.log(
         `Payment succeeded for subscription: ${subscription._id}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to handle payment succeeded: ${error.message}`);
       throw error;
     }
@@ -276,11 +280,11 @@ export class WebhookService {
         subscriptionId: subscription._id!,
         stripePaymentIntentId: invoice.payment_intent as string,
         status: PaymentStatus.FAILED,
-        paymentMethod: 'card', // Default
+        paymentMethod: "card", // Default
         amount: invoice.amount_due,
         currency: invoice.currency,
-        description: invoice.description || 'Failed subscription payment',
-        failureReason: 'Payment failed via webhook',
+        description: invoice.description || "Failed subscription payment",
+        failureReason: "Payment failed via webhook",
         billingPeriodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : undefined,
         billingPeriodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : undefined,
         invoiceId: invoice.id,
@@ -296,7 +300,8 @@ export class WebhookService {
       this.logger.log(
         `Payment failed for subscription: ${subscription._id}`,
       );
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to handle payment failed: ${error.message}`);
       throw error;
     }
@@ -321,12 +326,14 @@ export class WebhookService {
         this.logger.log(
           `Updated payment status to succeeded: ${paymentIntent.id}`,
         );
-      } else {
+      }
+      else {
         this.logger.log(
           `Payment intent succeeded but no payment record found: ${paymentIntent.id}`,
         );
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to handle payment intent succeeded: ${error.message}`,
       );
@@ -347,18 +354,20 @@ export class WebhookService {
       if (existingPayment) {
         await this.dbServiceClient.updatePaymentByStripePaymentIntentId(paymentIntent.id, {
           status: PaymentStatus.FAILED,
-          failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+          failureReason: paymentIntent.last_payment_error?.message || "Payment failed",
         });
 
         this.logger.log(
           `Updated payment status to failed: ${paymentIntent.id}`,
         );
-      } else {
+      }
+      else {
         this.logger.log(
           `Payment intent failed but no payment record found: ${paymentIntent.id}`,
         );
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(
         `Failed to handle payment intent failed: ${error.message}`,
       );
@@ -373,16 +382,16 @@ export class WebhookService {
    */
   private mapStripeStatus(stripeStatus: string): SubscriptionStatus {
     switch (stripeStatus) {
-      case 'trialing':
+      case "trialing":
         return SubscriptionStatus.TRIAL;
-      case 'active':
+      case "active":
         return SubscriptionStatus.ACTIVE;
-      case 'past_due':
+      case "past_due":
         return SubscriptionStatus.PAST_DUE;
-      case 'canceled':
-      case 'cancelled':
+      case "canceled":
+      case "cancelled":
         return SubscriptionStatus.CANCELED;
-      case 'unpaid':
+      case "unpaid":
         return SubscriptionStatus.UNPAID;
       default:
         this.logger.warn(`Unknown Stripe status: ${stripeStatus}`);

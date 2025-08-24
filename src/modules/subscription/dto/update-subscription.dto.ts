@@ -1,11 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
-import { IsOptional, IsEnum, IsBoolean, IsDate } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
+import { IsBoolean, IsDate, IsEnum, IsOptional } from "class-validator";
+
 import {
-  SubscriptionStatus,
   SubscriptionPlan,
-} from '../../../common/types';
+  SubscriptionStatus,
+} from "../../../common/types";
 
 /**
  * DTO for updating a subscription
@@ -15,7 +15,7 @@ export class UpdateSubscriptionDto {
    * Subscription status
    */
   @ApiProperty({
-    description: 'Subscription status',
+    description: "Subscription status",
     enum: SubscriptionStatus,
     required: false,
   })
@@ -27,7 +27,7 @@ export class UpdateSubscriptionDto {
    * Subscription plan
    */
   @ApiProperty({
-    description: 'Subscription plan',
+    description: "Subscription plan",
     enum: SubscriptionPlan,
     required: false,
   })
@@ -39,7 +39,7 @@ export class UpdateSubscriptionDto {
    * Whether to cancel at period end
    */
   @ApiProperty({
-    description: 'Whether to cancel at period end',
+    description: "Whether to cancel at period end",
     required: false,
   })
   @IsOptional()
@@ -50,7 +50,7 @@ export class UpdateSubscriptionDto {
    * Trial end date
    */
   @ApiProperty({
-    description: 'Trial end date',
+    description: "Trial end date",
     type: Date,
     required: false,
   })
@@ -63,7 +63,7 @@ export class UpdateSubscriptionDto {
    * Current period start
    */
   @ApiProperty({
-    description: 'Current period start',
+    description: "Current period start",
     type: Date,
     required: false,
   })
@@ -76,7 +76,7 @@ export class UpdateSubscriptionDto {
    * Current period end
    */
   @ApiProperty({
-    description: 'Current period end',
+    description: "Current period end",
     type: Date,
     required: false,
   })
@@ -89,7 +89,7 @@ export class UpdateSubscriptionDto {
    * Next billing date
    */
   @ApiProperty({
-    description: 'Next billing date',
+    description: "Next billing date",
     type: Date,
     required: false,
   })
